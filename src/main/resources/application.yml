@@ -1,0 +1,91 @@
+# configuration server local mac
+server:
+  port: 18090
+  servlet:
+    context-path: /
+spring:
+  main:
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      accept-single-value-as-array: true
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: http://localhost:8080
+          jwk-set-uri: http://localhost:8080/oauth/v2/keys
+      opaque-token:
+        introspection-uri: http://localhost:8080/oauth/v2/introspect
+        client-id : 233637021149626371@i2ev
+        client-secret: zEVDIXkkYUzMERI1ihXZ3wCsGrip8qHXeYecr7BRHSnni35r8cByL2FWVenBnPyq
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password:
+    url: jdbc:mysql://localhost:3306/reimbursement
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 50
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+#    generate-ddl: true
+logging:
+  level:
+    root: info
+    demo: debug
+    org:
+      springframework:
+        web: info
+        security: debug
+zitadel:
+  iam:
+    org:
+      project:
+        roles-attribute: urn:zitadel:iam:org:project:233630462214406147:roles
+
+
+# configuration server local kantor
+#server:
+#  port: 18090
+#  servlet:
+#    context-path: /
+#spring:
+#  main:
+#    allow-circular-references: true
+#    allow-bean-definition-overriding: true
+#  jackson:
+#    serialization:
+#      write-dates-as-timestamps: false
+#    deserialization:
+#      accept-single-value-as-array: true
+#  security:
+#    oauth2:
+#      resource-server:
+#        jwt:
+#          issuer-uri: http://10.1.64.38:8080/
+#          jwk-set-uri: http://10.1.64.38:8080/oauth/v2/keys
+#      opaque-token:
+#        introspection-uri: http://10.1.64.38:8080/oauth/v2/introspect
+#        client-id: 235462660987109414@i2dev
+#        client-secret: CqLQjmEkRXX8t4zmjafx1EA2aadBvQRoxMXNvrCrrwkgWYjD25jVcdXlCCs3bSSP
+#logging:
+#  level:
+#    root: info
+#    demo: debug
+#    org:
+#      springframework:
+#        web: info
+#        security: debug
+#zitadel:
+#  iam:
+#    org:
+#      project:
+#        roles-attribute: urn:zitadel:iam:org:project:235461961712680998:roles

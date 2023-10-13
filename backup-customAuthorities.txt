@@ -1,0 +1,71 @@
+
+//package demo.app.config;
+//
+//import lombok.extern.slf4j.Slf4j;
+//import org.springframework.context.annotation.Configuration;
+//import org.springframework.security.core.GrantedAuthority;
+//import org.springframework.security.core.authority.SimpleGrantedAuthority;
+//import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
+//import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
+//import org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames;
+//import org.springframework.security.oauth2.server.resource.introspection.NimbusOpaqueTokenIntrospector;
+//import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
+//import org.springframework.stereotype.Component;
+//
+//import java.util.Collection;
+//import java.util.List;
+//import java.util.Map;
+//import java.util.stream.Collectors;
+//import java.util.stream.Stream;
+//
+//@Slf4j
+//@Configuration
+//@Component
+//public class CustomAuthoritiesOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
+//
+//    // Definisikan konstanta-konstanta yang diperlukan
+//    private final String INTROSPECTOR_URI = "http://localhost:8080/oauth/v2/introspect";
+//    private final String CLIENT_ID = "233637021149626371@i2ev";
+//    private final String CLIENT_SECRET = "BmjUi7FM6EMHGZRIKeiPrKgRWjif1PjipcKffDLNqfQPbENQ0toiUdvd0IImB7s4";
+//    private final String ROLES_ATTRIBUTE = "urn:zitadel:iam:org:project:233630462214406147:roles";
+//
+//    // Inisialisasi NimbusOpaqueTokenIntrospector dengan konstanta-konstanta di atas
+//    private final OpaqueTokenIntrospector delegate =
+//            new NimbusOpaqueTokenIntrospector(INTROSPECTOR_URI, CLIENT_ID, CLIENT_SECRET);
+//
+//    // Metode untuk melakukan introspeksi token
+//    public OAuth2AuthenticatedPrincipal introspect(String token) {
+//
+//        OAuth2AuthenticatedPrincipal principal = this.delegate.introspect(token);
+//
+//        // Membuat OAuth2AuthenticatedPrincipal baru dengan authorities yang diambil dari token
+//        return new DefaultOAuth2AuthenticatedPrincipal(
+//                principal.getName(), principal.getAttributes(), extractAuthorities(principal));
+//    }
+//
+//    // Metode untuk mengekstrak authorities dari token
+//    private Collection<GrantedAuthority> extractAuthorities(OAuth2AuthenticatedPrincipal principal) {
+//        List<String> scopes = principal.getAttribute(OAuth2TokenIntrospectionClaimNames.SCOPE);
+//        List<String> userAuthorities = getUserAuthorities(principal);
+//
+//        // Mencetak informasi untuk keperluan debugging
+//        System.out.println("Scopes: " + scopes);
+//        System.out.println("User Authorities: " + userAuthorities);
+//
+//        // Gabungkan authorities dari scope dan userAuthorities
+//        assert scopes != null;
+//        List<String> allAuthorities = Stream.concat(scopes.stream(), userAuthorities.stream())
+//                .toList();
+//        return allAuthorities.stream()
+//                .map(SimpleGrantedAuthority::new)
+//                .collect(Collectors.toList());
+//    }
+//
+//    // Metode untuk mendapatkan authority roles dari project id
+//    private List<String> getUserAuthorities(OAuth2AuthenticatedPrincipal principal) {
+//        Map<String, Map<String, String>> projectRoles = principal.getAttribute(ROLES_ATTRIBUTE);
+//        assert projectRoles != null;
+//        return projectRoles.keySet().stream().toList();
+//    }
+//
+//}
