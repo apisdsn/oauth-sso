@@ -31,7 +31,7 @@ public class AuthoritiesManager {
 
         return authorities.stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(allowedAuthorities::contains);
+                .noneMatch(allowedAuthorities::contains);
     }
 }
 

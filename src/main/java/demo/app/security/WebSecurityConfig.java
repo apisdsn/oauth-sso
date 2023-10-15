@@ -1,4 +1,3 @@
-
 package demo.app.security;
 
 import demo.app.utils.CustomAuthoritiesOpaqueTokenIntrospector;
@@ -37,16 +36,16 @@ public class WebSecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/api/greet/admin").hasAuthority("admin")
                                 .requestMatchers("/api/greet/client").hasAuthority("user")
-                                .requestMatchers("/api/employees/**") .permitAll()
+                                .requestMatchers("/api/employees/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2ResourceServer ->
-                        oauth2ResourceServer
-                                .opaqueToken(opaqueTokenConfigurer ->
-                                        opaqueTokenConfigurer
-                                                .introspector(customAuthoritiesOpaqueTokenIntrospector())
+                                oauth2ResourceServer
+                                        .opaqueToken(opaqueTokenConfigurer ->
+                                                        opaqueTokenConfigurer
+                                                                .introspector(customAuthoritiesOpaqueTokenIntrospector())
 //                                                .authenticationConverter(introspectionAuthenticationConverter())
-                                )
+                                        )
                 )
                 .exceptionHandling(Customizer.withDefaults())
                 .sessionManagement(smc ->

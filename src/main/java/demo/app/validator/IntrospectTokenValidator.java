@@ -17,6 +17,7 @@ public class IntrospectTokenValidator {
 
     @Value("${zitadel.iam.org.project.roles-attribute}")
     private String ROLES_ATTRIBUTE;
+
     public void validateToken(Map<String, Object> token, Collection<GrantedAuthority> scopes) {
         log.debug("Token: {}", token);
 
@@ -25,6 +26,7 @@ public class IntrospectTokenValidator {
             throw new ValidatorErrorHandler(HttpStatus.UNAUTHORIZED, "invalid_token_revoked", "Token is invalid or expired.");
         }
     }
+
     private Instant getExpirationTime(Map<String, Object> token) {
         Object expValue = token.get("exp");
         log.debug("Exp Value {}", expValue);
@@ -37,9 +39,11 @@ public class IntrospectTokenValidator {
             throw new IllegalArgumentException("Invalid 'exp' value in token.");
         }
     }
+
     private boolean isTokenInvalidOrExpired(Map<String, Object> token, Instant expirationTime) {
         return expirationTime.isBefore(Instant.now()) || !(boolean) token.getOrDefault("active", false);
     }
+
     @SuppressWarnings("unchecked")
     private boolean matchTokenScopes(Map<String, Object> token, Collection<GrantedAuthority> orScopes) {
         log.debug("Match Token Scopes: {}", orScopes);

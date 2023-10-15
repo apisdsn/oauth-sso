@@ -42,9 +42,11 @@ public class AddressService {
         addressRepository.save(address);
         return toAddressResponse(address);
     }
+
+    // admin or manager service
     public AddressResponse updateAddressByClientId(AddressRequest request, String clientId, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
-        if (!authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
+        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
         }
         Employee employee = findEmployeeByClientId(clientId);
@@ -67,14 +69,17 @@ public class AddressService {
                 .postalCode(address.getPostalCode())
                 .build();
     }
+
     private String getClientIdFromPrincipal(OAuth2AuthenticatedPrincipal principal) {
         Map<String, Object> attributes = principal.getAttributes();
         return attributes.get("client_id").toString();
     }
+
     private Employee findEmployeeByClientId(String clientId) {
         return employeeRepository.findByClientId(clientId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee not found"));
     }
+
     private void updateAddressFields(Address address, AddressRequest request) {
         address.setStreet(request.getStreet());
         address.setCity(request.getCity());

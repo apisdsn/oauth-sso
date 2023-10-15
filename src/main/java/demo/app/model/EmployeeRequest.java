@@ -26,11 +26,9 @@ public class EmployeeRequest {
     @Size(max = 50)
     private String company;
 
-    @NotBlank
     @Size(max = 50)
     private String position;
 
-    @NotBlank
     @Size(max = 20)
     private String gender;
 

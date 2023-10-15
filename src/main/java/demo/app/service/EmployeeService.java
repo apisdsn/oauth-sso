@@ -39,7 +39,7 @@ public class EmployeeService {
         String clientId = getClientIdFromPrincipal(principal);
         String email = getEmailFromPrincipal(principal);
 
-        if (employeeRepository.existsByClientId(clientId)){
+        if (employeeRepository.existsByClientId(clientId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee already exists");
         }
 
@@ -65,6 +65,7 @@ public class EmployeeService {
 
         employeeRepository.save(employee);
     }
+
     @Transactional(readOnly = true)
     public EmployeeResponse getCurrent(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthorization(principal, auth);
@@ -75,7 +76,7 @@ public class EmployeeService {
 
     // admin or manager service
     @Transactional(readOnly = true)
-    public EmployeeResponse getByClientId(String clientId){
+    public EmployeeResponse getByClientId(String clientId) {
         Employee employee = findEmployeeByClientId(clientId);
         return toEmployeeResponse(employee);
     }
@@ -83,15 +84,16 @@ public class EmployeeService {
     // admin or manager service
     @Transactional(readOnly = true)
     public List<EmployeeResponse> findAllEmployee(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        if (!authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
+        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
         }
         validateAuthorization(principal, auth);
         List<Employee> employees = employeeRepository.findAll();
         return employees.stream().map(this::toEmployeeResponse).toList();
     }
+
     @Transactional
-    public EmployeeResponse update(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal){
+    public EmployeeResponse update(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
 
         String clientId = getClientIdFromPrincipal(principal);
@@ -105,6 +107,17 @@ public class EmployeeService {
         employeeRepository.save(employee);
         return toEmployeeResponse(employee);
     }
+
+    public void remove(OAuth2AuthenticatedPrincipal principal) {
+        String clientId = getClientIdFromPrincipal(principal);
+        Employee employee = findEmployeeByClientId(clientId);
+        if (employee != null) {
+            employeeRepository.delete(employee);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found for the given clientId");
+        }
+    }
+
     private EmployeeResponse toEmployeeResponse(Employee employee) {
         return EmployeeResponse.builder()
                 .employeeId(employee.getEmployeeId())
@@ -118,24 +131,28 @@ public class EmployeeService {
                 .address(addressService.toAddressResponse(employee.getAddress()))
                 .build();
     }
+
     private String getClientIdFromPrincipal(OAuth2AuthenticatedPrincipal principal) {
         String attributes = principal.getAttribute(OAuth2TokenIntrospectionClaimNames.CLIENT_ID);
-        if (attributes == null){
+        if (attributes == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Client ID not found");
         }
         return attributes;
     }
+
     private String getEmailFromPrincipal(OAuth2AuthenticatedPrincipal principal) {
         Map<String, Object> attributes = principal.getAttributes();
-        if (attributes == null){
+        if (attributes == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email not found");
         }
         return attributes.get("email").toString();
     }
+
     private Employee findEmployeeByClientId(String clientId) {
         return employeeRepository.findByClientId(clientId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee not found"));
     }
+
     private void validateAuthorization(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         if (authoritiesManager.hasAuthority(principal, auth)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized");

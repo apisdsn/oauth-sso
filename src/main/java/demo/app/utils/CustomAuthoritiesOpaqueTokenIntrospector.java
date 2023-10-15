@@ -1,18 +1,15 @@
 package demo.app.utils;
 
-import demo.app.utils.AuthoritiesExtractor;
 import demo.app.validator.IntrospectTokenValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.server.resource.introspection.NimbusOpaqueTokenIntrospector;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 
 @Slf4j
@@ -34,8 +31,8 @@ public class CustomAuthoritiesOpaqueTokenIntrospector implements OpaqueTokenIntr
     @Value("${spring.security.oauth2.opaque-token.client-secret}")
     private String CLIENT_SECRET;
 
-    private OpaqueTokenIntrospector delegate(){
-       return new NimbusOpaqueTokenIntrospector(INTROSPECT_URI, CLIENT_ID, CLIENT_SECRET);
+    private OpaqueTokenIntrospector delegate() {
+        return new NimbusOpaqueTokenIntrospector(INTROSPECT_URI, CLIENT_ID, CLIENT_SECRET);
     }
 
     @Override
