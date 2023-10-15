@@ -7,12 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Entity
+@Table(name = "address")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "address")
 public class Address {
     @Id
     @Column(name = "address_id")
@@ -25,5 +25,11 @@ public class Address {
 
     @Column(name = "postal_code")
     private String postalCode;
+
+    @OneToOne
+    @JoinColumn(name = "employee_id")
+    @JsonIgnore
+    private Employee employee;
+
 
 }

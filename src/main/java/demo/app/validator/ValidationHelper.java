@@ -9,16 +9,12 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 
 @Service
-public class ValidationService {
-
-    private final Validator validator;
+public class ValidationHelper {
 
     @Autowired
-    public ValidationService(Validator validator) {
-        this.validator = validator;
-    }
+    private Validator validator;
 
-    public void validate(Object request) {
+    public void validate(Object... request) {
         Set<ConstraintViolation<Object>> constraintViolations = validator.validate(request);
         if (!constraintViolations.isEmpty()) {
             throw new ConstraintViolationException(constraintViolations);

@@ -28,46 +28,42 @@ public class EmployeeController {
     }
 
     @PreAuthorize("hasAuthority('user')")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<String> register(@RequestBody EmployeeRequest employeeRequest, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        if (!auth.isAuthenticated()){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authenticated");
-        }
-        employeeService.register(employeeRequest, principal, auth);
+    public WebResponse<String> register (@RequestBody EmployeeRequest request ,@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+        validateAuthentication(auth);
+        employeeService.register(request, principal, auth);
         return WebResponse.<String>builder().data("Success").build();
     }
-
     @PreAuthorize("hasAuthority('user')")
     @GetMapping(path = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<EmployeeResponse> get(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         EmployeeResponse employeeResponse = employeeService.getCurrent(principal, auth);
         return WebResponse.<EmployeeResponse>builder().data(employeeResponse).build();
     }
-
-    @PreAuthorize("hasAnyAuthority('manager', 'admin')")
-    @GetMapping(path = "/{employeeId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<EmployeeResponse> findEmployeeById(@PathVariable("employeeId") String employeeId) {
-        EmployeeResponse employeeResponse = employeeService.getEmployeeById(employeeId);
-        return WebResponse.<EmployeeResponse>builder().data(employeeResponse).build();
-    }
-
-    @PreAuthorize("hasAnyAuthority('manager', 'admin')")
-    @GetMapping(path = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<List<EmployeeResponse>> getAll(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        if (!auth.isAuthenticated()){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authenticated");
-        }
-        List<EmployeeResponse> employeeResponseAll = employeeService.findAllEmployee(principal, auth);
-        return WebResponse.<List<EmployeeResponse>>builder().data(employeeResponseAll).build();
-    }
-
     @PreAuthorize("hasAuthority('user')")
     @PatchMapping(path = "/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<EmployeeResponse> update(@RequestBody EmployeeRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth){
-        if (!auth.isAuthenticated()){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authenticated");
-        }
+        validateAuthentication(auth);
         EmployeeResponse employeeResponse = employeeService.update(request, principal);
         return WebResponse.<EmployeeResponse>builder().data(employeeResponse).build();
+    }
+    @PreAuthorize("hasAuthority('admin') or hasAuthority('manager')")
+    @GetMapping(path = "/{clientId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<EmployeeResponse> findByClientId(@PathVariable("clientId") String clientId) {
+        EmployeeResponse employeeResponse = employeeService.getByClientId(clientId);
+        return WebResponse.<EmployeeResponse>builder().data(employeeResponse).build();
+    }
+    @PreAuthorize("hasAuthority('admin') or hasAuthority('manager')")
+    @GetMapping(path = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<List<EmployeeResponse>> getAll(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+       validateAuthentication(auth);
+        List<EmployeeResponse> employeeResponseAll = employeeService.findAllEmployee(principal, auth);
+        return WebResponse.<List<EmployeeResponse>>builder().data(employeeResponseAll).build();
+    }
+    private void validateAuthentication(Authentication auth) {
+        if (!auth.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authenticated");
+        }
     }
 }

@@ -7,14 +7,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @Component
 public class AuthoritiesManager {
+
     private List<String> allAuthorities;
 
     public boolean hasAuthority(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
@@ -24,4 +24,16 @@ public class AuthoritiesManager {
                 .anyMatch(authority -> authority.equals(auth.getAuthorities().toString()));
     }
 
+    public boolean checkIfUserIsAdminOrManager(OAuth2AuthenticatedPrincipal principal) {
+        List<GrantedAuthority> authorities = new ArrayList<>(principal.getAuthorities());
+
+        List<String> allowedAuthorities = List.of("admin", "manager");
+
+        return authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(allowedAuthorities::contains);
+    }
 }
+
+
+

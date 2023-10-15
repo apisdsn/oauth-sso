@@ -14,17 +14,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AddressRequest {
-    @Size(max = 200)
+
+    @Size(max = 100)
     private String street;
 
-    @Size(max = 100)
+    @Size(max = 50)
     private String city;
 
-    @Size(max = 100)
+    @Size(max = 50)
     private String province;
 
-    @NotBlank
-    @Size(max = 100)
+    @Size(max = 50)
     private String country;
 
     @Size(max = 10)
