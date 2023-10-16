@@ -21,7 +21,7 @@ public class AuthoritiesManager {
         List<? extends GrantedAuthority> userAuthorities = principal.getAuthorities().stream().toList();
         return userAuthorities.stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(authority -> authority.equals(auth.getAuthorities().toString()));
+                .allMatch(authority -> authority.equals(auth.getAuthorities().toString()));
     }
 
     public boolean checkIfUserIsAdminOrManager(OAuth2AuthenticatedPrincipal principal) {

@@ -39,8 +39,8 @@ public class AddressService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found for the employee");
         }
         updateAddressFields(address, request);
-        addressRepository.save(address);
-        return toAddressResponse(address);
+
+        return toAddressResponse(addressRepository.save(address));
     }
 
     // admin or manager service

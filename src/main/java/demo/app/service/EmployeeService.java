@@ -12,12 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -35,9 +36,10 @@ public class EmployeeService {
     public void register(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthorization(principal, auth);
         validationHelper.validate(request);
-
         String clientId = getClientIdFromPrincipal(principal);
         String email = getEmailFromPrincipal(principal);
+        log.debug("clientId: {}", clientId);
+        log.debug("email: {}", email);
 
         if (employeeRepository.existsByClientId(clientId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee already exists");
@@ -70,13 +72,19 @@ public class EmployeeService {
     public EmployeeResponse getCurrent(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthorization(principal, auth);
         String clientId = getClientIdFromPrincipal(principal);
+        log.debug("clientId: {}", clientId);
         Employee employee = findEmployeeByClientId(clientId);
         return toEmployeeResponse(employee);
     }
 
     // admin or manager service
     @Transactional(readOnly = true)
-    public EmployeeResponse getByClientId(String clientId) {
+    public EmployeeResponse getByClientId(String clientId, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
+        }
+        validateAuthorization(principal, auth);
+
         Employee employee = findEmployeeByClientId(clientId);
         return toEmployeeResponse(employee);
     }
@@ -108,8 +116,22 @@ public class EmployeeService {
         return toEmployeeResponse(employee);
     }
 
-    public void remove(OAuth2AuthenticatedPrincipal principal) {
+    public void removeCurrent(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+        validateAuthorization(principal, auth);
         String clientId = getClientIdFromPrincipal(principal);
+        Employee employee = findEmployeeByClientId(clientId);
+        if (employee != null) {
+            employeeRepository.delete(employee);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found for the given clientId");
+        }
+    }
+
+    public void removeByClientId(String clientId, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+        validateAuthorization(principal, auth);
+        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
+        }
         Employee employee = findEmployeeByClientId(clientId);
         if (employee != null) {
             employeeRepository.delete(employee);
@@ -133,24 +155,24 @@ public class EmployeeService {
     }
 
     private String getClientIdFromPrincipal(OAuth2AuthenticatedPrincipal principal) {
-        String attributes = principal.getAttribute(OAuth2TokenIntrospectionClaimNames.CLIENT_ID);
+        Map<String, Object> attributes = principal.getAttributes();
         if (attributes == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Client ID not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Client ID not found");
         }
-        return attributes;
+        return attributes.get("sub").toString();
     }
 
     private String getEmailFromPrincipal(OAuth2AuthenticatedPrincipal principal) {
         Map<String, Object> attributes = principal.getAttributes();
         if (attributes == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Email not found");
         }
         return attributes.get("email").toString();
     }
 
     private Employee findEmployeeByClientId(String clientId) {
         return employeeRepository.findByClientId(clientId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
     }
 
     private void validateAuthorization(OAuth2AuthenticatedPrincipal principal, Authentication auth) {

@@ -21,10 +21,6 @@ public class Reimbursement {
     @Column(name = "reimbursement_id")
     private Long reimbursementId;
 
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
-
     private BigDecimal amount;
 
     private String approved;
@@ -40,4 +36,8 @@ public class Reimbursement {
 
     @Column(name = "date_updated")
     private LocalDateTime dateUpdated;
+
+    @ManyToOne
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
 }

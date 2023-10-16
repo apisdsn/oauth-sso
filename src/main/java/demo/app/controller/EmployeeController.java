@@ -1,6 +1,8 @@
 package demo.app.controller;
 
-import demo.app.model.*;
+import demo.app.model.EmployeeRequest;
+import demo.app.model.EmployeeResponse;
+import demo.app.model.WebResponse;
 import demo.app.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/employees")
+@RequestMapping("/api/employee")
 public class EmployeeController {
 
     @Autowired
@@ -29,12 +31,13 @@ public class EmployeeController {
     public WebResponse<String> register(@RequestBody EmployeeRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
         employeeService.register(request, principal, auth);
-        return WebResponse.<String>builder().data("OK").build();
+        return WebResponse.<String>builder().data("Successes").build();
     }
 
     @PreAuthorize("hasAuthority('user')")
     @GetMapping(path = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<EmployeeResponse> get(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+        validateAuthentication(auth);
         EmployeeResponse employeeResponse = employeeService.getCurrent(principal, auth);
         return WebResponse.<EmployeeResponse>builder().data(employeeResponse).build();
     }
@@ -47,26 +50,39 @@ public class EmployeeController {
         return WebResponse.<EmployeeResponse>builder().data(employeeResponse).build();
     }
 
-    @PreAuthorize("hasAuthority('admin') or hasAuthority('manager')")
+    @DeleteMapping(path = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<String> remove(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+        validateAuthentication(auth);
+        employeeService.removeCurrent(principal, auth);
+        return WebResponse.<String>builder().data("Data has removed").build();
+    }
+
+    // admin or manager controller
+//    @PreAuthorize("hasAuthority('admin') or hasAuthority('manager')")
     @GetMapping(path = "/admin/{clientId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<EmployeeResponse> findByClientId(@PathVariable("clientId") String clientId) {
-        EmployeeResponse employeeResponse = employeeService.getByClientId(clientId);
+    public WebResponse<EmployeeResponse> findByClientId(@PathVariable("clientId") String clientId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+        validateAuthentication(auth);
+        EmployeeResponse employeeResponse = employeeService.getByClientId(clientId, principal, auth);
+        log.debug("employeeResponse: {}", employeeResponse);
         return WebResponse.<EmployeeResponse>builder().data(employeeResponse).build();
     }
 
-    @PreAuthorize("hasAuthority('admin') or hasAuthority('manager')")
+    // admin or manager controller
+//    @PreAuthorize("hasAuthority('admin') or hasAuthority('manager')")
     @GetMapping(path = "/admin/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<List<EmployeeResponse>> getAll(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
         List<EmployeeResponse> employeeResponseAll = employeeService.findAllEmployee(principal, auth);
+        log.debug("employeeResponseAll: {}", employeeResponseAll);
         return WebResponse.<List<EmployeeResponse>>builder().data(employeeResponseAll).build();
     }
 
-    @DeleteMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<String> remove(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+    // admin or manager controller
+    @DeleteMapping(path = "/admin/{clientId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<String> remove(@PathVariable("clientId") String clientId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
-        employeeService.remove(principal);
-        return WebResponse.<String>builder().data("OK").build();
+        employeeService.removeByClientId(clientId, principal, auth);
+        return WebResponse.<String>builder().data("Data with clientId has removed").build();
     }
 
     private void validateAuthentication(Authentication auth) {
