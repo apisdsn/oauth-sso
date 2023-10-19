@@ -118,6 +118,7 @@ public class EmployeeService {
         return toEmployeeResponse(employee);
     }
 
+    @Transactional
     public void removeCurrent(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthorization(principal, auth);
         String clientId = getClientIdFromPrincipal(principal);
@@ -129,6 +130,7 @@ public class EmployeeService {
         }
     }
 
+    @Transactional
     public void removeByClientId(String clientId, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthorization(principal, auth);
         if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {

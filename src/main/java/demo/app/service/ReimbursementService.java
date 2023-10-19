@@ -60,7 +60,7 @@ public class ReimbursementService {
         return toReimbursementResponse(reimbursement);
     }
 
-
+    @Transactional
     public ReimbursementResponse updateReimbursementUser(Long reimbursementId, ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthorization(principal, auth);
         validationHelper.validate(request);

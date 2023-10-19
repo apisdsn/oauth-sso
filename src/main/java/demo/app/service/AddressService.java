@@ -51,6 +51,14 @@ public class AddressService {
                 .build();
     }
 
+    private void updateAddressFields(Address address, AddressRequest request) {
+        address.setStreet(request.getStreet());
+        address.setCity(request.getCity());
+        address.setProvince(request.getProvince());
+        address.setCountry(request.getCountry());
+        address.setPostalCode(request.getPostalCode());
+    }
+
     private String getClientIdFromPrincipal(OAuth2AuthenticatedPrincipal principal) {
         Map<String, Object> attributes = principal.getAttributes();
         return attributes.get("client_id").toString();
@@ -59,13 +67,5 @@ public class AddressService {
     private Employee findEmployeeByClientId(String clientId) {
         return employeeRepository.findByClientId(clientId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee not found" + clientId));
-    }
-
-    private void updateAddressFields(Address address, AddressRequest request) {
-        address.setStreet(request.getStreet());
-        address.setCity(request.getCity());
-        address.setProvince(request.getProvince());
-        address.setCountry(request.getCountry());
-        address.setPostalCode(request.getPostalCode());
     }
 }
