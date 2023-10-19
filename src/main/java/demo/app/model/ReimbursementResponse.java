@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,9 +14,8 @@ import java.time.LocalDateTime;
 public class ReimbursementResponse {
     private Long reimbursementId;
     private Long employeeId;
-    private BigDecimal amount;
-    private String approved;
-    private String currency;
+    private String amount;
+    private String approvedId;
     private String description;
     private Boolean status;
     private LocalDateTime dateCreated;

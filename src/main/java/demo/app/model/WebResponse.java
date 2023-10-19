@@ -1,6 +1,5 @@
 package demo.app.model;
 
-import demo.app.model.PagingResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +15,4 @@ public class WebResponse<T> {
 
     private String errors;
 
-    private PagingResponse paging;
 }

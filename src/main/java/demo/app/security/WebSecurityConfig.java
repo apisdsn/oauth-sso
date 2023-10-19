@@ -22,11 +22,6 @@ public class WebSecurityConfig {
         return new CustomAuthoritiesOpaqueTokenIntrospector();
     }
 
-//    @Bean
-//    public IntrospectionAuthenticationConverter introspectionAuthenticationConverter(){
-//        return new IntrospectionAuthenticationConverter();
-//    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -37,15 +32,16 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/greet/admin").hasAuthority("admin")
                                 .requestMatchers("/api/greet/client").hasAuthority("user")
                                 .requestMatchers("/api/employees/**").permitAll()
+                                .requestMatchers("/api/address/**").permitAll()
+                                .requestMatchers("/api/reimbursement/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2ResourceServer ->
-                                oauth2ResourceServer
-                                        .opaqueToken(opaqueTokenConfigurer ->
-                                                        opaqueTokenConfigurer
-                                                                .introspector(customAuthoritiesOpaqueTokenIntrospector())
-//                                                .authenticationConverter(introspectionAuthenticationConverter())
-                                        )
+                        oauth2ResourceServer
+                                .opaqueToken(opaqueTokenConfigurer ->
+                                        opaqueTokenConfigurer
+                                                .introspector(customAuthoritiesOpaqueTokenIntrospector())
+                                )
                 )
                 .exceptionHandling(Customizer.withDefaults())
                 .sessionManagement(smc ->

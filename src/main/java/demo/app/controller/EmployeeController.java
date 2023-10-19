@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
@@ -25,7 +24,6 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    @PreAuthorize("hasAuthority('user')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<String> register(@RequestBody EmployeeRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
@@ -34,7 +32,6 @@ public class EmployeeController {
         return WebResponse.<String>builder().data("Successes").build();
     }
 
-    @PreAuthorize("hasAuthority('user')")
     @GetMapping(path = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<EmployeeResponse> get(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
@@ -42,8 +39,7 @@ public class EmployeeController {
         return WebResponse.<EmployeeResponse>builder().data(employeeResponse).build();
     }
 
-    @PreAuthorize("hasAuthority('user')")
-    @PatchMapping(path = "/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<EmployeeResponse> update(@RequestBody EmployeeRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
         EmployeeResponse employeeResponse = employeeService.update(request, principal);
@@ -58,7 +54,6 @@ public class EmployeeController {
     }
 
     // admin or manager controller
-//    @PreAuthorize("hasAuthority('admin') or hasAuthority('manager')")
     @GetMapping(path = "/admin/{clientId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<EmployeeResponse> findByClientId(@PathVariable("clientId") String clientId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
@@ -68,7 +63,6 @@ public class EmployeeController {
     }
 
     // admin or manager controller
-//    @PreAuthorize("hasAuthority('admin') or hasAuthority('manager')")
     @GetMapping(path = "/admin/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<List<EmployeeResponse>> getAll(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);

@@ -14,15 +14,12 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 public class ReimbursementRequest {
-    
+
     @NotNull
     private BigDecimal amount;
 
-    private String approved;
-
-    @NotBlank
-    private String currency;
-
+    private String approvedId;
+    
     @NotBlank
     private String description;
 

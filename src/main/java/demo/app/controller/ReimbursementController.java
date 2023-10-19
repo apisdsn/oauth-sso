@@ -16,7 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/reimbursement")
+@RequestMapping("/api/reimbursement")
 public class ReimbursementController {
 
     @Autowired
@@ -26,37 +26,30 @@ public class ReimbursementController {
     @ResponseStatus(HttpStatus.CREATED)
     public WebResponse<ReimbursementResponse> create(@RequestBody ReimbursementRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
-        ReimbursementResponse reimbursementResponse = reimbursementService.createOrUpdateReimbursement(request, principal, auth, null, false);
+        ReimbursementResponse reimbursementResponse = reimbursementService.create(request, principal, auth);
         return WebResponse.<ReimbursementResponse>builder().data(reimbursementResponse).build();
     }
 
-    @PatchMapping(path = "/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<ReimbursementResponse> updateUser(@RequestBody ReimbursementRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+    @PatchMapping(path = "/current/{reimbursementId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<ReimbursementResponse> updateUser(@PathVariable("reimbursementId") Long reimbursementId, @RequestBody ReimbursementRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
-        ReimbursementResponse reimbursementResponse = reimbursementService.createOrUpdateReimbursement(request, principal, auth, null, false);
-        return WebResponse.<ReimbursementResponse>builder().data(reimbursementResponse).build();
-    }
-
-    @PatchMapping(path = "/update/admin/{clientId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<ReimbursementResponse> updateAdmin(@RequestBody ReimbursementRequest request, @PathVariable("clientId") String clientId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthentication(auth);
-        ReimbursementResponse reimbursementResponse = reimbursementService.createOrUpdateReimbursement(request, principal, auth, clientId, true);
-        return WebResponse.<ReimbursementResponse>builder().data(reimbursementResponse).build();
-    }
-
-    @DeleteMapping("/delete/user")
-    public WebResponse<ReimbursementResponse> deleteReimbursementByUser(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthentication(auth);
-        ReimbursementResponse reimbursementResponse = reimbursementService.deleteReimbursementByUser(principal, auth);
+        ReimbursementResponse reimbursementResponse = reimbursementService.updateReimbursementUser(reimbursementId, request, principal, auth);
         return WebResponse.<ReimbursementResponse>builder().data(reimbursementResponse).build();
     }
 
     // admin or manager service
-    @DeleteMapping("/delete/admin/{clientId}")
-    public WebResponse<ReimbursementResponse> deleteReimbursementByAdmin(@PathVariable String clientId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+    @PatchMapping(path = "/update/admin/{reimbursementId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<ReimbursementResponse> updateAdmin(@PathVariable("reimbursementId") Long reimbursementId, @RequestBody ReimbursementRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
-        ReimbursementResponse reimbursementResponse = reimbursementService.deleteReimbursementByAdmin(clientId, principal, auth);
+        ReimbursementResponse reimbursementResponse = reimbursementService.updateReimbursementByAdmin(reimbursementId, request, principal, auth);
         return WebResponse.<ReimbursementResponse>builder().data(reimbursementResponse).build();
+    }
+
+    @DeleteMapping("/delete/{reimbursementId}")
+    public WebResponse<String> deleteReimbursementByUser(@PathVariable("reimbursementId") Long reimbursementId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+        validateAuthentication(auth);
+        reimbursementService.removeReimbursementByUser(reimbursementId, principal, auth);
+        return WebResponse.<String>builder().data("OK").build();
     }
 
     // admin or manager service

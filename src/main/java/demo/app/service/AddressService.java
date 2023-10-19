@@ -6,7 +6,6 @@ import demo.app.model.AddressRequest;
 import demo.app.model.AddressResponse;
 import demo.app.repository.AddressRepository;
 import demo.app.repository.EmployeeRepository;
-import demo.app.utils.AuthoritiesManager;
 import demo.app.validator.ValidationHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +25,6 @@ public class AddressService {
     @Autowired
     private AddressRepository addressRepository;
     @Autowired
-    private AuthoritiesManager authoritiesManager;
-    @Autowired
     private ValidationHelper validationHelper;
 
     public AddressResponse updateAddress(AddressRequest request, OAuth2AuthenticatedPrincipal principal) {
@@ -41,22 +38,6 @@ public class AddressService {
         updateAddressFields(address, request);
 
         return toAddressResponse(addressRepository.save(address));
-    }
-
-    // admin or manager service
-    public AddressResponse updateAddressByClientId(AddressRequest request, String clientId, OAuth2AuthenticatedPrincipal principal) {
-        validationHelper.validate(request);
-        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
-        }
-        Employee employee = findEmployeeByClientId(clientId);
-        Address address = employee.getAddress();
-        if (address == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found for the employee");
-        }
-        updateAddressFields(address, request);
-        addressRepository.save(address);
-        return toAddressResponse(address);
     }
 
     public AddressResponse toAddressResponse(Address address) {
@@ -77,7 +58,7 @@ public class AddressService {
 
     private Employee findEmployeeByClientId(String clientId) {
         return employeeRepository.findByClientId(clientId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee not found" + clientId));
     }
 
     private void updateAddressFields(Address address, AddressRequest request) {

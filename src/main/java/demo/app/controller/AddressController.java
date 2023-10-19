@@ -11,7 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -22,18 +25,10 @@ public class AddressController {
     private AddressService addressService;
 
     @PreAuthorize("hasAuthority('user')")
-    @PatchMapping(path = "/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<AddressResponse> update(@RequestBody AddressRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         validateAuthentication(auth);
         AddressResponse addressResponse = addressService.updateAddress(request, principal);
-        return WebResponse.<AddressResponse>builder().data(addressResponse).build();
-    }
-
-    @PreAuthorize("hasAuthority('admin') or hasAuthority('manager')")
-    @PatchMapping(path = "/admin/{clientId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<AddressResponse> updateAddressByClientId(@RequestBody AddressRequest request, @PathVariable("clientId") String clientId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthentication(auth);
-        AddressResponse addressResponse = addressService.updateAddressByClientId(request, clientId, principal);
         return WebResponse.<AddressResponse>builder().data(addressResponse).build();
     }
 

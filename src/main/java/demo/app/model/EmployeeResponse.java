@@ -1,16 +1,17 @@
 package demo.app.model;
 
-import demo.app.entity.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class EmployeeResponse{
+public class EmployeeResponse {
     private Long employeeId;
 
     private String clientId;
@@ -28,4 +29,6 @@ public class EmployeeResponse{
     private String gender;
 
     private AddressResponse address;
+
+    private List<ReimbursementResponse> reimbursements;
 }

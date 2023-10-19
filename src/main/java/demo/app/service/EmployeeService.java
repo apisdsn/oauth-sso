@@ -31,6 +31,8 @@ public class EmployeeService {
     private AuthoritiesManager authoritiesManager;
     @Autowired
     private AddressService addressService;
+    @Autowired
+    private ReimbursementService reimbursementService;
 
     @Transactional
     public void register(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
@@ -151,6 +153,7 @@ public class EmployeeService {
                 .position(employee.getPosition())
                 .gender(employee.getGender())
                 .address(addressService.toAddressResponse(employee.getAddress()))
+                .reimbursements(employee.getReimbursements().stream().map(reimbursementService::toReimbursementResponse).toList())
                 .build();
     }
 
@@ -172,7 +175,7 @@ public class EmployeeService {
 
     private Employee findEmployeeByClientId(String clientId) {
         return employeeRepository.findByClientId(clientId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found for the given clientId" + clientId));
     }
 
     private void validateAuthorization(OAuth2AuthenticatedPrincipal principal, Authentication auth) {

@@ -23,9 +23,8 @@ public class Reimbursement {
 
     private BigDecimal amount;
 
-    private String approved;
-
-    private String currency;
+    @Column(name = "approved_id")
+    private String approvedId;
 
     private String description;
 
@@ -37,7 +36,7 @@ public class Reimbursement {
     @Column(name = "date_updated")
     private LocalDateTime dateUpdated;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "employee_id")
     private Employee employee;
 }
