@@ -1,5 +1,6 @@
 package demo.app.security;
 
+import demo.app.utils.CustomAuthoritiesFilter;
 import demo.app.utils.CustomAuthoritiesOpaqueTokenIntrospector;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -11,11 +12,22 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Slf4j
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+    private final String[] AUTH_WHITELIST = {
+            "/v3/api-docs/**",
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/websocket/**",
+            "/webjars/**",
+            "/stomp/**",
+            "/app.js",
+            "/main.css",
+    };
 
     @Bean
     public OpaqueTokenIntrospector customAuthoritiesOpaqueTokenIntrospector() {
@@ -27,13 +39,10 @@ public class WebSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
+                .addFilterAfter(new CustomAuthoritiesFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/greet/admin").hasAuthority("admin")
-                                .requestMatchers("/api/greet/client").hasAuthority("user")
-                                .requestMatchers("/api/employees/**").permitAll()
-                                .requestMatchers("/api/address/**").permitAll()
-                                .requestMatchers("/api/reimbursement/**").permitAll()
+                                .requestMatchers(AUTH_WHITELIST).permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2ResourceServer ->
@@ -43,7 +52,6 @@ public class WebSecurityConfig {
                                                 .introspector(customAuthoritiesOpaqueTokenIntrospector())
                                 )
                 )
-                .exceptionHandling(Customizer.withDefaults())
                 .sessionManagement(smc ->
                         smc
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

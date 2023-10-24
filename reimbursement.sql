@@ -1,3 +1,4 @@
+DROP DATABASE reimbursement;
 CREATE DATABASE reimbursement;
 USE reimbursement;
 
@@ -19,8 +20,10 @@ CREATE TABLE reimbursement
 (
     reimbursement_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     employee_id      BIGINT                    NOT NULL,
-    amount           DECIMAL(38, 2),
     approved_id      VARCHAR(50) DEFAULT NULL,
+    amount           DECIMAL(38, 2)            NOT NULL,
+    activity         VARCHAR(100),
+    type             VARCHAR(100),
     description      VARCHAR(255),
     status           BOOLEAN     DEFAULT FALSE NOT NULL,
     date_created     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -42,4 +45,3 @@ CREATE TABLE address
     CONSTRAINT FK_address_employeeId FOREIGN KEY (employee_id) REFERENCES employees (employee_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE InnoDB;
 
-DROP DATABASE reimbursement;

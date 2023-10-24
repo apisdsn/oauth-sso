@@ -1,9 +1,6 @@
 package demo.app.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import demo.app.entity.Address;
-
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,5 +45,4 @@ public class EmployeeRequest {
     @JsonProperty("postal_code")
     private String postalCode;
 
-    private AddressRequest address;
 }

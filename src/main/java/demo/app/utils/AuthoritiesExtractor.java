@@ -1,7 +1,6 @@
 package demo.app.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,8 +19,6 @@ import java.util.stream.Stream;
 @Component
 @Slf4j
 public class AuthoritiesExtractor {
-    @Autowired
-    private AuthoritiesManager authoritiesManager;
 
     @Value("${zitadel.iam.org.project.roles-attribute}")
     private String ROLES_ATTRIBUTE;
@@ -39,7 +36,6 @@ public class AuthoritiesExtractor {
                 .collect(Collectors.toList());
         log.debug("All Authorities: {}", allAuthorities);
 
-        authoritiesManager.setAllAuthorities(allAuthorities);
 
         return allAuthorities.stream()
                 .map(SimpleGrantedAuthority::new)
@@ -49,7 +45,7 @@ public class AuthoritiesExtractor {
     private List<String> getUserAuthorities(OAuth2AuthenticatedPrincipal principal) {
         Map<String, Map<String, String>> projectRoles = principal.getAttribute(ROLES_ATTRIBUTE);
         if (projectRoles == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Roles Attribute is null");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to access this resource");
         }
         return projectRoles.keySet().stream().toList();
     }

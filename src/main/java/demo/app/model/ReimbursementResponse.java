@@ -17,6 +17,8 @@ public class ReimbursementResponse {
     private String amount;
     private String approvedId;
     private String description;
+    private String activity;
+    private String typeReimbursement;
     private Boolean status;
     private LocalDateTime dateCreated;
     private LocalDateTime dateUpdated;

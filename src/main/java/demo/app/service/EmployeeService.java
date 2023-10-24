@@ -5,7 +5,6 @@ import demo.app.entity.Employee;
 import demo.app.model.EmployeeRequest;
 import demo.app.model.EmployeeResponse;
 import demo.app.repository.EmployeeRepository;
-import demo.app.utils.AuthoritiesManager;
 import demo.app.validator.ValidationHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +27,12 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
     @Autowired
-    private AuthoritiesManager authoritiesManager;
-    @Autowired
     private AddressService addressService;
     @Autowired
     private ReimbursementService reimbursementService;
 
     @Transactional
     public void register(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthorization(principal, auth);
         validationHelper.validate(request);
         String clientId = getClientIdFromPrincipal(principal);
         String email = getEmailFromPrincipal(principal);
@@ -71,8 +67,7 @@ public class EmployeeService {
     }
 
     @Transactional(readOnly = true)
-    public EmployeeResponse getCurrent(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthorization(principal, auth);
+    public EmployeeResponse getCurrent(OAuth2AuthenticatedPrincipal principal) {
         String clientId = getClientIdFromPrincipal(principal);
         log.debug("clientId: {}", clientId);
         Employee employee = findEmployeeByClientId(clientId);
@@ -81,23 +76,14 @@ public class EmployeeService {
 
     // admin or manager service
     @Transactional(readOnly = true)
-    public EmployeeResponse getByClientId(String clientId, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
-        }
-        validateAuthorization(principal, auth);
-
+    public EmployeeResponse getByClientId(String clientId, OAuth2AuthenticatedPrincipal principal) {
         Employee employee = findEmployeeByClientId(clientId);
         return toEmployeeResponse(employee);
     }
 
     // admin or manager service
     @Transactional(readOnly = true)
-    public List<EmployeeResponse> findAllEmployee(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
-        }
-        validateAuthorization(principal, auth);
+    public List<EmployeeResponse> findAllEmployee(OAuth2AuthenticatedPrincipal principal) {
         List<Employee> employees = employeeRepository.findAll();
         return employees.stream().map(this::toEmployeeResponse).toList();
     }
@@ -119,8 +105,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public void removeCurrent(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthorization(principal, auth);
+    public void removeCurrent(OAuth2AuthenticatedPrincipal principal) {
         String clientId = getClientIdFromPrincipal(principal);
         Employee employee = findEmployeeByClientId(clientId);
         if (employee != null) {
@@ -131,11 +116,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public void removeByClientId(String clientId, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthorization(principal, auth);
-        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
-        }
+    public void removeByClientId(String clientId, OAuth2AuthenticatedPrincipal principal) {
         Employee employee = findEmployeeByClientId(clientId);
         if (employee != null) {
             employeeRepository.delete(employee);
@@ -177,12 +158,6 @@ public class EmployeeService {
 
     private Employee findEmployeeByClientId(String clientId) {
         return employeeRepository.findByClientId(clientId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found for the given clientId" + clientId));
-    }
-
-    private void validateAuthorization(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        if (authoritiesManager.hasAuthority(principal, auth)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized");
-        }
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found for the given clientId " + clientId));
     }
 }

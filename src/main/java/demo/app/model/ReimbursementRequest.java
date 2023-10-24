@@ -19,7 +19,13 @@ public class ReimbursementRequest {
     private BigDecimal amount;
 
     private String approvedId;
-    
+
+    @NotBlank
+    private String activity;
+
+    @NotBlank
+    private String typeReimbursement;
+
     @NotBlank
     private String description;
 

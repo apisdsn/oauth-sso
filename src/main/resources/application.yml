@@ -3,8 +3,8 @@ server:
   port: 18090
   servlet:
     context-path: /
-  error:
-    include-message: always
+#  error:
+#    include-message: always
 spring:
   main:
     allow-circular-references: true
@@ -52,7 +52,12 @@ zitadel:
     org:
       project:
         roles-attribute: urn:zitadel:iam:org:project:236632819709771778:roles
-
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    oauth:
+      use-basic-authentication-with-access-code-grant: true
 
 #configuration server local kantor
 #server:
@@ -100,3 +105,4 @@ zitadel:
 #    org:
 #      project:
 #        roles-attribute: urn:zitadel:iam:org:project:235461961712680998:roles
+

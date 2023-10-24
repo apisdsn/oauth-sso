@@ -6,12 +6,10 @@ import demo.app.model.ReimbursementRequest;
 import demo.app.model.ReimbursementResponse;
 import demo.app.repository.EmployeeRepository;
 import demo.app.repository.ReimbursementRepository;
-import demo.app.utils.AuthoritiesManager;
 import demo.app.validator.ValidationHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +26,6 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class ReimbursementService {
-
-    @Autowired
-    private AuthoritiesManager authoritiesManager;
     @Autowired
     private EmployeeRepository employeeRepository;
     @Autowired
@@ -39,8 +34,7 @@ public class ReimbursementService {
     private ValidationHelper validationHelper;
 
     @Transactional
-    public ReimbursementResponse create(ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthorization(principal, auth);
+    public ReimbursementResponse create(ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
 
         String clientId = getClientIdFromPrincipal(principal);
@@ -50,6 +44,8 @@ public class ReimbursementService {
         Reimbursement reimbursement = new Reimbursement();
         reimbursement.setEmployee(employee);
         reimbursement.setAmount(request.getAmount());
+        reimbursement.setActivity(request.getActivity());
+        reimbursement.setTypeReimbursement(request.getTypeReimbursement());
         reimbursement.setDescription(request.getDescription());
         reimbursement.setStatus(false);
         reimbursement.setDateCreated(LocalDateTime.now());
@@ -61,8 +57,7 @@ public class ReimbursementService {
     }
 
     @Transactional
-    public ReimbursementResponse updateReimbursementUser(Long reimbursementId, ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthorization(principal, auth);
+    public ReimbursementResponse updateReimbursementUser(Long reimbursementId, ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
         Employee employee = employeeRepository.findByClientId(getClientIdFromPrincipal(principal))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee is not found"));
@@ -78,6 +73,14 @@ public class ReimbursementService {
             reimbursement.setDescription(request.getDescription());
         }
 
+        if (request.getActivity() != null) {
+            reimbursement.setActivity(request.getActivity());
+        }
+
+        if (request.getTypeReimbursement() != null) {
+            reimbursement.setTypeReimbursement(request.getTypeReimbursement());
+        }
+
         reimbursement.setDateCreated(LocalDateTime.now());
 
         reimbursementRepository.save(reimbursement);
@@ -87,18 +90,11 @@ public class ReimbursementService {
 
     // admin or manager service
     @Transactional
-    public ReimbursementResponse updateReimbursementByAdmin(Long reimbursementId, ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthorization(principal, auth);
+    public ReimbursementResponse updateReimbursementByAdmin(Long reimbursementId, ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
-        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
-        }
-
         String idApprovedBy = getClientIdFromPrincipal(principal);
-
         Reimbursement reimbursement = reimbursementRepository.findById(reimbursementId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reimbursement not found"));
-
         reimbursement.setStatus(request.getStatus());
         reimbursement.setApprovedId(idApprovedBy);
         reimbursement.setDateUpdated(LocalDateTime.now());
@@ -109,8 +105,7 @@ public class ReimbursementService {
     }
 
     @Transactional
-    public void removeReimbursementByUser(Long reimbursementId, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthorization(principal, auth);
+    public void removeReimbursementByUser(Long reimbursementId, OAuth2AuthenticatedPrincipal principal) {
         Employee employee = employeeRepository.findByClientId(getClientIdFromPrincipal(principal))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee is not found"));
 
@@ -124,12 +119,7 @@ public class ReimbursementService {
 
     // admin or manager service
     @Transactional(readOnly = true)
-    public List<ReimbursementResponse> getReimbursementsWithStatusFalse(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        validateAuthorization(principal, auth);
-        if (authoritiesManager.checkIfUserIsAdminOrManager(principal)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized to perform this operation");
-        }
-        validateAuthorization(principal, auth);
+    public List<ReimbursementResponse> getReimbursementsWithStatusFalse() {
 
         List<Reimbursement> reimbursements = reimbursementRepository.findByStatusFalse();
 
@@ -144,6 +134,8 @@ public class ReimbursementService {
                 .employeeId(reimbursement.getEmployee().getEmployeeId())
                 .amount(convertRupiah(reimbursement.getAmount()))
                 .approvedId(reimbursement.getApprovedId())
+                .activity(reimbursement.getActivity())
+                .typeReimbursement(reimbursement.getTypeReimbursement())
                 .description(reimbursement.getDescription())
                 .status(reimbursement.getStatus())
                 .dateCreated(reimbursement.getDateCreated())
@@ -151,19 +143,12 @@ public class ReimbursementService {
                 .build();
     }
 
-
     private String getClientIdFromPrincipal(OAuth2AuthenticatedPrincipal principal) {
         Map<String, Object> attributes = principal.getAttributes();
         if (attributes == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Client ID not found");
         }
         return attributes.get("sub").toString();
-    }
-
-    private void validateAuthorization(OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        if (authoritiesManager.hasAuthority(principal, auth)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are not authorized");
-        }
     }
 
     private Employee findEmployeeByClientId(String clientId) {

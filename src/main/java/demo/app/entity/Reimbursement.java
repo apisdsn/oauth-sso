@@ -21,10 +21,15 @@ public class Reimbursement {
     @Column(name = "reimbursement_id")
     private Long reimbursementId;
 
-    private BigDecimal amount;
-
     @Column(name = "approved_id")
     private String approvedId;
+
+    private BigDecimal amount;
+
+    private String activity;
+
+    @Column(name = "type")
+    private String typeReimbursement;
 
     private String description;
 
@@ -36,7 +41,7 @@ public class Reimbursement {
     @Column(name = "date_updated")
     private LocalDateTime dateUpdated;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
     private Employee employee;
 }
