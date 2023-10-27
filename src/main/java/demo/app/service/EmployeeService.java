@@ -36,8 +36,8 @@ public class EmployeeService {
         validationHelper.validate(request);
         String clientId = getClientIdFromPrincipal(principal);
         String email = getEmailFromPrincipal(principal);
-        log.debug("clientId: {}", clientId);
-        log.debug("email: {}", email);
+        log.info("clientId: {}", clientId);
+        log.info("email: {}", email);
 
         if (employeeRepository.existsByClientId(clientId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee already exists");
@@ -69,7 +69,7 @@ public class EmployeeService {
     @Transactional(readOnly = true)
     public EmployeeResponse getCurrent(OAuth2AuthenticatedPrincipal principal) {
         String clientId = getClientIdFromPrincipal(principal);
-        log.debug("clientId: {}", clientId);
+        log.info("clientId: {}", clientId);
         Employee employee = findEmployeeByClientId(clientId);
         return toEmployeeResponse(employee);
     }

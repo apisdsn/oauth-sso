@@ -3,8 +3,8 @@ server:
   port: 18090
   servlet:
     context-path: /
-#  error:
-#    include-message: always
+  error:
+    include-message: always
 spring:
   main:
     allow-circular-references: true
@@ -14,6 +14,12 @@ spring:
       write-dates-as-timestamps: false
     deserialization:
       accept-single-value-as-array: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+      file-size-threshold: 2KB
   security:
     oauth2:
       resource-server:
@@ -22,8 +28,8 @@ spring:
           jwk-set-uri: http://localhost:8080/oauth/v2/keys
       opaque-token:
         introspection-uri: http://localhost:8080/oauth/v2/introspect
-        client-id: 236633302927212546@i2dev
-        client-secret: GTXnjdqfK6oT0laeiiqgMhJ5JirJeejAVsf4ebVuKN2IW0n7xZ5sRgdrAzkpCbRJ
+        client-id: 237917845118320647@i2dev
+        client-secret: KpbRf8oClDzu4qffGNXfnzHZ5HWrHdU8AawTWYes1geRUNWErPRaL0RRvHMHUsys
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
@@ -51,13 +57,13 @@ zitadel:
   iam:
     org:
       project:
-        roles-attribute: urn:zitadel:iam:org:project:236632819709771778:roles
+        roles-attribute: urn:zitadel:iam:org:project:237917135962112007:roles
 springdoc:
-  api-docs:
-    path: /api-docs
   swagger-ui:
     oauth:
       use-basic-authentication-with-access-code-grant: true
+file:
+  upload-dir: /Users/hafiz/Magang/diteter-kampus/sso/api-server/src/main/resources/upload
 
 #configuration server local kantor
 #server:
@@ -105,4 +111,7 @@ springdoc:
 #    org:
 #      project:
 #        roles-attribute: urn:zitadel:iam:org:project:235461961712680998:roles
-
+#springdoc:
+#  swagger-ui:
+#    oauth:
+#      use-basic-authentication-with-access-code-grant: true

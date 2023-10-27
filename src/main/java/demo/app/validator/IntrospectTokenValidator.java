@@ -19,7 +19,7 @@ public class IntrospectTokenValidator {
     private String ROLES_ATTRIBUTE;
 
     public void validateToken(Map<String, Object> token, Collection<GrantedAuthority> scopes) {
-        log.debug("Token: {}", token);
+        log.info("Token: {}", token);
 
         Instant expirationTime = getExpirationTime(token);
         if (isTokenInvalidOrExpired(token, expirationTime) || !matchTokenScopes(token, scopes)) {
@@ -29,7 +29,7 @@ public class IntrospectTokenValidator {
 
     private Instant getExpirationTime(Map<String, Object> token) {
         Object expValue = token.get("exp");
-        log.debug("Exp Value {}", expValue);
+        log.info("Exp Value {}", expValue);
 
         if (expValue instanceof Number) {
             return Instant.ofEpochSecond(((Number) expValue).longValue());
@@ -46,18 +46,21 @@ public class IntrospectTokenValidator {
 
     @SuppressWarnings("unchecked")
     private boolean matchTokenScopes(Map<String, Object> token, Collection<GrantedAuthority> orScopes) {
-        log.debug("Match Token Scopes: {}", orScopes);
+        log.info("Match Token Scopes: {}", orScopes);
         if (orScopes == null) {
             return true;
         }
 
         Object rolesObject = token.get(ROLES_ATTRIBUTE);
-        log.debug("Roles Object: {}", rolesObject);
+        log.info("Roles Object: {}", rolesObject);
         if (!(rolesObject instanceof Map)) {
             return false;
         }
 
         Map<String, Map<String, String>> projectRoles = (Map<String, Map<String, String>>) rolesObject;
-        return orScopes.stream().anyMatch(scope -> projectRoles.containsKey(scope.getAuthority()));
+        return projectRoles.keySet().stream()
+                .map(role -> "ROLE_" + role.toUpperCase())
+                .anyMatch(role -> orScopes.stream()
+                        .anyMatch(authority -> authority.getAuthority().equals(role)));
     }
 }

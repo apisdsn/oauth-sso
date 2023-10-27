@@ -51,7 +51,7 @@ public class EmployeeController {
     @GetMapping(path = "/api/admin/employee/{clientId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<EmployeeResponse> findByClientId(@PathVariable("clientId") String clientId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         EmployeeResponse employeeResponse = employeeService.getByClientId(clientId, principal);
-        log.debug("employeeResponse: {}", employeeResponse);
+        log.info("employeeResponse: {}", employeeResponse);
         return WebResponse.<EmployeeResponse>builder().data(employeeResponse).build();
     }
 
@@ -59,7 +59,7 @@ public class EmployeeController {
     @GetMapping(path = "/api/admin/employee/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<List<EmployeeResponse>> getAll(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         List<EmployeeResponse> employeeResponseAll = employeeService.findAllEmployee(principal);
-        log.debug("employeeResponseAll: {}", employeeResponseAll);
+        log.info("employeeResponseAll: {}", employeeResponseAll);
         return WebResponse.<List<EmployeeResponse>>builder().data(employeeResponseAll).build();
     }
 

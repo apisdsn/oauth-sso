@@ -19,15 +19,19 @@ CREATE TABLE employees
 CREATE TABLE reimbursement
 (
     reimbursement_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    employee_id      BIGINT                    NOT NULL,
-    approved_id      VARCHAR(50) DEFAULT NULL,
-    amount           DECIMAL(38, 2)            NOT NULL,
+    employee_id      BIGINT                     NOT NULL,
+    approved_id      VARCHAR(50)  DEFAULT NULL,
+    approved_name    VARCHAR(100) DEFAULT NULL,
+    amount           DECIMAL(38, 2)             NOT NULL,
     activity         VARCHAR(100),
     type             VARCHAR(100),
+#     file             LONGBLOB,
+#     file_name        VARCHAR(100),
+#     file_type        VARCHAR(100),
     description      VARCHAR(255),
-    status           BOOLEAN     DEFAULT FALSE NOT NULL,
-    date_created     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
-    date_updated     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    status           BOOLEAN      DEFAULT FALSE NOT NULL,
+    date_created     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    date_updated     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT FK_reimbursement_clientId FOREIGN KEY (employee_id) REFERENCES employees (employee_id) ON DELETE CASCADE ON UPDATE CASCADE
 
 

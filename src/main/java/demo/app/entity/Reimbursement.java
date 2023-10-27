@@ -24,6 +24,9 @@ public class Reimbursement {
     @Column(name = "approved_id")
     private String approvedId;
 
+    @Column(name = "approved_name")
+    private String approvedName;
+
     private BigDecimal amount;
 
     private String activity;
@@ -34,6 +37,15 @@ public class Reimbursement {
     private String description;
 
     private Boolean status;
+
+//    @Lob
+//    private byte[] file;
+//
+//    @Column(name = "file_name")
+//    private String fileName;
+//
+//    @Column(name = "file_type")
+//    private String fileType;
 
     @Column(name = "date_created")
     private LocalDateTime dateCreated;

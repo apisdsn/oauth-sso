@@ -27,14 +27,14 @@ public class AuthoritiesExtractor {
         List<String> scopes = principal.getAttribute(OAuth2TokenIntrospectionClaimNames.SCOPE);
         List<String> userAuthorities = getUserAuthorities(principal);
 
-        log.debug("Scopes: {}", scopes);
-        log.debug("User Authorities: {}", userAuthorities);
+        log.info("Scopes: {}", scopes);
+        log.info("User Authorities: {}", userAuthorities);
 
         assert scopes != null;
 
         List<String> allAuthorities = Stream.concat(scopes.stream(), userAuthorities.stream())
                 .collect(Collectors.toList());
-        log.debug("All Authorities: {}", allAuthorities);
+        log.info("All Authorities: {}", allAuthorities);
 
 
         return allAuthorities.stream()
@@ -44,9 +44,9 @@ public class AuthoritiesExtractor {
 
     private List<String> getUserAuthorities(OAuth2AuthenticatedPrincipal principal) {
         Map<String, Map<String, String>> projectRoles = principal.getAttribute(ROLES_ATTRIBUTE);
-        if (projectRoles == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to access this resource");
+        if (projectRoles == null || projectRoles.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User has no roles.");
         }
-        return projectRoles.keySet().stream().toList();
+        return projectRoles.keySet().stream().map(role -> "ROLE_" + role.toUpperCase()).toList();
     }
 }

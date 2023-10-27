@@ -1,7 +1,6 @@
 package demo.app.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.StandardClaimNames;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
@@ -16,9 +15,7 @@ import java.util.Map;
 class GreetingsController {
 
     @GetMapping("/api/greet/admin")
-    @PreAuthorize("hasAuthority('admin')")
     Object greetmeadmin(Authentication auth) {
-
         var getAuthor = auth.getAuthorities();
         var tokenAttributes = ((BearerTokenAuthentication) auth).getTokenAttributes();
         var message = "Endpoint Access for Admin Greetings my friend " + tokenAttributes.get(StandardClaimNames.PREFERRED_USERNAME) + " " + Instant.now() + " " + getAuthor;
@@ -26,7 +23,6 @@ class GreetingsController {
     }
 
     @GetMapping("/api/greet/client")
-    @PreAuthorize("hasAuthority('user')")
     Object greetmeclient(Authentication auth) {
         var getAuthor = auth.getAuthorities();
         var tokenAttributes = ((BearerTokenAuthentication) auth).getTokenAttributes();

@@ -39,8 +39,7 @@ public class ReimbursementService {
 
         String clientId = getClientIdFromPrincipal(principal);
         Employee employee = findEmployeeByClientId(clientId);
-
-
+        
         Reimbursement reimbursement = new Reimbursement();
         reimbursement.setEmployee(employee);
         reimbursement.setAmount(request.getAmount());
@@ -50,9 +49,7 @@ public class ReimbursementService {
         reimbursement.setStatus(false);
         reimbursement.setDateCreated(LocalDateTime.now());
 
-
         reimbursementRepository.save(reimbursement);
-
         return toReimbursementResponse(reimbursement);
     }
 
@@ -93,10 +90,12 @@ public class ReimbursementService {
     public ReimbursementResponse updateReimbursementByAdmin(Long reimbursementId, ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
         String idApprovedBy = getClientIdFromPrincipal(principal);
+        String nameApprovedBy = principal.getAttribute("name");
         Reimbursement reimbursement = reimbursementRepository.findById(reimbursementId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reimbursement not found"));
         reimbursement.setStatus(request.getStatus());
         reimbursement.setApprovedId(idApprovedBy);
+        reimbursement.setApprovedName(nameApprovedBy);
         reimbursement.setDateUpdated(LocalDateTime.now());
 
         reimbursementRepository.save(reimbursement);
@@ -112,28 +111,26 @@ public class ReimbursementService {
         Reimbursement reimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursementId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reimbursement is not found"));
 
-
         reimbursementRepository.delete(reimbursement);
-
     }
 
     // admin or manager service
     @Transactional(readOnly = true)
     public List<ReimbursementResponse> getReimbursementsWithStatusFalse() {
-
         List<Reimbursement> reimbursements = reimbursementRepository.findByStatusFalse();
-
         return reimbursements.stream()
                 .map(this::toReimbursementResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ReimbursementResponse toReimbursementResponse(Reimbursement reimbursement) {
         return ReimbursementResponse.builder()
                 .reimbursementId(reimbursement.getReimbursementId())
                 .employeeId(reimbursement.getEmployee().getEmployeeId())
                 .amount(convertRupiah(reimbursement.getAmount()))
                 .approvedId(reimbursement.getApprovedId())
+                .approvedName(reimbursement.getApprovedName())
                 .activity(reimbursement.getActivity())
                 .typeReimbursement(reimbursement.getTypeReimbursement())
                 .description(reimbursement.getDescription())

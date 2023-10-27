@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class ReimbursementResponse {
     private Long reimbursementId;
     private Long employeeId;
+    private String approvedName;
     private String amount;
     private String approvedId;
     private String description;

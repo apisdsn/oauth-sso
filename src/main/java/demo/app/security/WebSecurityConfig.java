@@ -5,6 +5,7 @@ import demo.app.utils.CustomAuthoritiesOpaqueTokenIntrospector;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+
     private final String[] AUTH_WHITELIST = {
             "/v3/api-docs/**",
             "/swagger-ui.html",
@@ -35,14 +37,23 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    @Order(0)
+    public SecurityFilterChain whitelistFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .securityMatcher(AUTH_WHITELIST)
+                .authorizeHttpRequests(auth -> auth.requestMatchers(AUTH_WHITELIST).permitAll())
+                .build();
+    }
+
+    @Bean
+    @Order(1)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .addFilterBefore(new CustomAuthoritiesFilter(), BasicAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .addFilterAfter(new CustomAuthoritiesFilter(), BasicAuthenticationFilter.class)
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers(AUTH_WHITELIST).permitAll()
+                .authorizeHttpRequests(auth ->
+                        auth
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2ResourceServer ->
