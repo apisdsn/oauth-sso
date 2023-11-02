@@ -9,7 +9,6 @@ import demo.app.validator.ValidationHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +31,7 @@ public class EmployeeService {
     private ReimbursementService reimbursementService;
 
     @Transactional
-    public void register(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+    public void register(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
         String clientId = getClientIdFromPrincipal(principal);
         String email = getEmailFromPrincipal(principal);
@@ -76,14 +75,14 @@ public class EmployeeService {
 
     // admin or manager service
     @Transactional(readOnly = true)
-    public EmployeeResponse getByClientId(String clientId, OAuth2AuthenticatedPrincipal principal) {
+    public EmployeeResponse getByClientId(String clientId) {
         Employee employee = findEmployeeByClientId(clientId);
         return toEmployeeResponse(employee);
     }
 
     // admin or manager service
     @Transactional(readOnly = true)
-    public List<EmployeeResponse> findAllEmployee(OAuth2AuthenticatedPrincipal principal) {
+    public List<EmployeeResponse> findAllEmployee() {
         List<Employee> employees = employeeRepository.findAll();
         return employees.stream().map(this::toEmployeeResponse).toList();
     }
@@ -116,7 +115,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public void removeByClientId(String clientId, OAuth2AuthenticatedPrincipal principal) {
+    public void removeByClientId(String clientId) {
         Employee employee = findEmployeeByClientId(clientId);
         if (employee != null) {
             employeeRepository.delete(employee);

@@ -39,7 +39,7 @@ public class ReimbursementService {
 
         String clientId = getClientIdFromPrincipal(principal);
         Employee employee = findEmployeeByClientId(clientId);
-        
+
         Reimbursement reimbursement = new Reimbursement();
         reimbursement.setEmployee(employee);
         reimbursement.setAmount(request.getAmount());
@@ -101,6 +101,17 @@ public class ReimbursementService {
         reimbursementRepository.save(reimbursement);
 
         return toReimbursementResponse(reimbursement);
+    }
+
+    @Transactional
+    public void removeReimbursementByAdmin(Long reimbursementId, String clientId) {
+        Employee employee = employeeRepository.findByClientId((clientId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee is not found"));
+
+        Reimbursement reimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursementId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reimbursement is not found"));
+
+        reimbursementRepository.delete(reimbursement);
     }
 
     @Transactional

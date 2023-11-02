@@ -11,15 +11,17 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/address")
 public class AddressController {
 
     @Autowired
     private AddressService addressService;
 
-    @PutMapping(path = "/api/address/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<AddressResponse> update(@RequestBody AddressRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
         AddressResponse addressResponse = addressService.updateAddress(request, principal, auth);
         return WebResponse.<AddressResponse>builder().data(addressResponse).build();

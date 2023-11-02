@@ -28,8 +28,8 @@ spring:
           jwk-set-uri: http://localhost:8080/oauth/v2/keys
       opaque-token:
         introspection-uri: http://localhost:8080/oauth/v2/introspect
-        client-id: 237917845118320647@i2dev
-        client-secret: KpbRf8oClDzu4qffGNXfnzHZ5HWrHdU8AawTWYes1geRUNWErPRaL0RRvHMHUsys
+        client-id: 238279431167213575@dev
+        client-secret: RTJGswKsxg2ajW8MzL5SN0oudFpueHuc4TuLeBX7oHC4f81Wh2Zgkcza3i5FQ75l
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
@@ -57,13 +57,11 @@ zitadel:
   iam:
     org:
       project:
-        roles-attribute: urn:zitadel:iam:org:project:237917135962112007:roles
+        roles-attribute: urn:zitadel:iam:org:project:238279061330198535:roles
 springdoc:
   swagger-ui:
     oauth:
       use-basic-authentication-with-access-code-grant: true
-file:
-  upload-dir: /Users/hafiz/Magang/diteter-kampus/sso/api-server/src/main/resources/upload
 
 #configuration server local kantor
 #server:
