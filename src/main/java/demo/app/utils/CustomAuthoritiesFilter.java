@@ -1,11 +1,13 @@
 package demo.app.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,9 +17,12 @@ import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
+@EqualsAndHashCode(callSuper = true)
 public class CustomAuthoritiesFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -36,13 +41,13 @@ public class CustomAuthoritiesFilter extends GenericFilterBean {
             List<String> roles = authorities.stream().map(GrantedAuthority::getAuthority).toList();
             log.info("Roles: {}", roles);
 
-            if (requestedPath.startsWith("/api/admin") || requestedPath.startsWith("/**")) {
+            if (requestedPath.startsWith("/api/admin") || requestedPath.startsWith("/api/")) {
                 rolePathsMap.put("ROLE_ADMIN", List.of(requestedPath));
                 rolePathsMap.put("ROLE_MANAGER", List.of(requestedPath));
             } else if (requestedPath.startsWith("/api/employee") || requestedPath.startsWith("/api/address") || requestedPath.startsWith("/api/reimbursement")) {
                 rolePathsMap.put("ROLE_USER", List.of(requestedPath));
             } else {
-                throw new ServletException("Invalid path");
+                throw new ServletException("Invalid path or insufficient privileges. Requested path: " + requestedPath);
             }
 
             boolean isPathAllowed = roles.stream()
@@ -61,17 +66,33 @@ public class CustomAuthoritiesFilter extends GenericFilterBean {
         }
     }
 
-    private void setUnauthorized(HttpServletResponse response) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    private void sendResponse(HttpServletResponse response, int statusCode, String error, String message) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> responseMap = new HashMap<>();
+
+        response.setStatus(statusCode);
         PrintWriter writer = response.getWriter();
-        writer.println("{ \"error\": \"You are not authenticated to perform this operation\" }");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String timestamp = LocalDateTime.now().format(formatter);
+
+        responseMap.put("error", error);
+        responseMap.put("message", message);
+        responseMap.put("timestamp", timestamp);
+
+        writer.println(objectMapper.writeValueAsString(responseMap));
         writer.flush();
     }
 
+    private void setUnauthorized(HttpServletResponse response) throws IOException {
+        sendResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
+                "You are not authenticated to perform this operation",
+                "Please log in to access the requested resource.");
+    }
+
     private void setForbidden(HttpServletResponse response) throws IOException {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        PrintWriter writer = response.getWriter();
-        writer.println("{ \"error\": \"You are not have Access to resource. Access denied\" }");
-        writer.flush();
+        sendResponse(response, HttpServletResponse.SC_FORBIDDEN,
+                "You do not have access to the requested resource. Access denied.",
+                "Make sure you have the appropriate role or contact the system administrator for further assistance.");
     }
 }

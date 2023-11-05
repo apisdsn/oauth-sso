@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,18 +20,19 @@ import java.util.stream.Stream;
 @Component
 @Slf4j
 public class AuthoritiesExtractor {
+    private static final String ROLE_PREFIX = "ROLE_";
 
     @Value("${zitadel.iam.org.project.roles-attribute}")
     private String ROLES_ATTRIBUTE;
 
+
     public Collection<GrantedAuthority> extractAuthorities(OAuth2AuthenticatedPrincipal principal) {
-        List<String> scopes = principal.getAttribute(OAuth2TokenIntrospectionClaimNames.SCOPE);
+        List<String> scopes = getScopesOrDefault(principal);
         List<String> userAuthorities = getUserAuthorities(principal);
 
         log.info("Scopes: {}", scopes);
         log.info("User Authorities: {}", userAuthorities);
 
-        assert scopes != null;
 
         List<String> allAuthorities = Stream.concat(scopes.stream(), userAuthorities.stream())
                 .collect(Collectors.toList());
@@ -42,11 +44,16 @@ public class AuthoritiesExtractor {
                 .collect(Collectors.toList());
     }
 
+    private List<String> getScopesOrDefault(OAuth2AuthenticatedPrincipal principal) {
+        List<String> scopes = principal.getAttribute(OAuth2TokenIntrospectionClaimNames.SCOPE);
+        return scopes != null ? scopes : Collections.emptyList();
+    }
+
     private List<String> getUserAuthorities(OAuth2AuthenticatedPrincipal principal) {
         Map<String, Map<String, String>> projectRoles = principal.getAttribute(ROLES_ATTRIBUTE);
         if (projectRoles == null || projectRoles.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User has no roles.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have any assigned roles.");
         }
-        return projectRoles.keySet().stream().map(role -> "ROLE_" + role.toUpperCase()).toList();
+        return projectRoles.keySet().stream().map(role -> ROLE_PREFIX + role.toUpperCase()).toList();
     }
 }

@@ -28,8 +28,8 @@ spring:
           jwk-set-uri: http://localhost:8080/oauth/v2/keys
       opaque-token:
         introspection-uri: http://localhost:8080/oauth/v2/introspect
-        client-id: 238279431167213575@dev
-        client-secret: RTJGswKsxg2ajW8MzL5SN0oudFpueHuc4TuLeBX7oHC4f81Wh2Zgkcza3i5FQ75l
+        client-id: 239415625104031749@i2dev
+        client-secret: yPdYHyfEK4027P8OTYZxJUeggrxdq5miOHivChyEy60BAJkvdxfPwuRxouQuOB7M
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
@@ -57,11 +57,19 @@ zitadel:
   iam:
     org:
       project:
-        roles-attribute: urn:zitadel:iam:org:project:238279061330198535:roles
-springdoc:
-  swagger-ui:
-    oauth:
-      use-basic-authentication-with-access-code-grant: true
+        roles-attribute: urn:zitadel:iam:org:project:239413432221171719:roles
+#springdoc:
+#  oAuthFlow:
+#    authorizationUrl: http://localhost:8080/oauth/v2/authorize
+#    tokenUrl: http://localhost:8080/oauth/v2/token
+#  swagger-ui:
+#    oauth:
+#      use-basic-authentication-with-access-code-grant: true
+#      client-id: 238279537954193415@dev
+#      client-secret: MmqULwl1hAMCPcvvMURfgEuKtuX0oLdSJckdJgUdEKUKUsorH0pQ52g16lwgzhS1
+#      scopes: "openid profile email"
+#    oauth2-redirect-url: http://localhost:8000/webapp/login/oauth2/code/zitadel
+
 
 #configuration server local kantor
 #server:
