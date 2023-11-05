@@ -25,19 +25,16 @@ public class AuthoritiesExtractor {
     @Value("${zitadel.iam.org.project.roles-attribute}")
     private String ROLES_ATTRIBUTE;
 
-
     public Collection<GrantedAuthority> extractAuthorities(OAuth2AuthenticatedPrincipal principal) {
         List<String> scopes = getScopesOrDefault(principal);
         List<String> userAuthorities = getUserAuthorities(principal);
 
         log.info("Scopes: {}", scopes);
         log.info("User Authorities: {}", userAuthorities);
-
-
+        
         List<String> allAuthorities = Stream.concat(scopes.stream(), userAuthorities.stream())
                 .collect(Collectors.toList());
         log.info("All Authorities: {}", allAuthorities);
-
 
         return allAuthorities.stream()
                 .map(SimpleGrantedAuthority::new)
