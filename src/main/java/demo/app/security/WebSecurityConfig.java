@@ -29,6 +29,8 @@ public class WebSecurityConfig {
             "/stomp/**",
             "/app.js",
             "/main.css",
+            "/error.html",
+            "/error/**"
     };
 
     @Bean

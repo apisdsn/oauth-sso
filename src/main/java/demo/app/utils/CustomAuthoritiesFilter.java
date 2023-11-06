@@ -7,7 +7,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
-@EqualsAndHashCode(callSuper = true)
 public class CustomAuthoritiesFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -33,6 +31,7 @@ public class CustomAuthoritiesFilter extends GenericFilterBean {
         response.setCharacterEncoding("UTF-8");
 
         String requestedPath = request.getRequestURI();
+        System.out.println(requestedPath);
         Map<String, List<String>> rolePathsMap = new HashMap<>();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -41,10 +40,11 @@ public class CustomAuthoritiesFilter extends GenericFilterBean {
             List<String> roles = authorities.stream().map(GrantedAuthority::getAuthority).toList();
             log.info("Roles: {}", roles);
 
-            if (requestedPath.startsWith("/api/admin") || requestedPath.startsWith("/api/")) {
+            if (requestedPath.startsWith("/api/admin") || requestedPath.startsWith("/api/**")) {
                 rolePathsMap.put("ROLE_ADMIN", List.of(requestedPath));
                 rolePathsMap.put("ROLE_MANAGER", List.of(requestedPath));
-            } else if (requestedPath.startsWith("/api/employee") || requestedPath.startsWith("/api/address") || requestedPath.startsWith("/api/reimbursement")) {
+            } else if (requestedPath.startsWith("/api/employees") || requestedPath.startsWith("/api/address") || requestedPath.startsWith("/api/reimbursements")) {
+                System.out.println(requestedPath);
                 rolePathsMap.put("ROLE_USER", List.of(requestedPath));
             } else {
                 throw new ServletException("Invalid path or insufficient privileges. Requested path: " + requestedPath);

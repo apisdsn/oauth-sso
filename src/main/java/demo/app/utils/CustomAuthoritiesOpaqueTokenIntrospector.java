@@ -38,15 +38,9 @@ public class CustomAuthoritiesOpaqueTokenIntrospector implements OpaqueTokenIntr
     @Override
     public OAuth2AuthenticatedPrincipal introspect(String token) {
         log.info("Token Introspect: {}", token);
-        try {
-            OAuth2AuthenticatedPrincipal principal = delegate().introspect(token);
-            introspectTokenValidator.validateToken(principal.getAttributes(), authoritiesExtractor.extractAuthorities(principal));
-            return new DefaultOAuth2AuthenticatedPrincipal(
-                    principal.getName(), principal.getAttributes(), authoritiesExtractor.extractAuthorities(principal));
-        } catch (Exception e) {
-            log.error("Error during token introspection", e);
-            throw new RuntimeException("Error during token introspection", e);
-        }
+        OAuth2AuthenticatedPrincipal principal = delegate().introspect(token);
+        introspectTokenValidator.validateToken(principal.getAttributes(), authoritiesExtractor.extractAuthorities(principal));
+        return new DefaultOAuth2AuthenticatedPrincipal(principal.getName(), principal.getAttributes(), authoritiesExtractor.extractAuthorities(principal));
     }
 }
 

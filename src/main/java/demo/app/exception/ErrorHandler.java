@@ -23,4 +23,5 @@ public class ErrorHandler {
         return ResponseEntity.status(exception.getStatusCode())
                 .body(WebResponse.<String>builder().errors(exception.getReason()).build());
     }
+
 }
