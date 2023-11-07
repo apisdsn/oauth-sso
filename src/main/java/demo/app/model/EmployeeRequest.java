@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class EmployeeRequest {
+
     @Size(max = 50)
     @JsonProperty("full_name")
     private String fullName;

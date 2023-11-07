@@ -68,6 +68,8 @@ class ControllerEmployeeTest {
     @Test
     void registerEmployeeBadRequest() throws Exception {
         EmployeeRequest employeeRequest = createEmployeeRequestWithEmptyFields();
+        createSampleEmployee();
+
         String token = "hKNwHIDC8l8i2Ekm1qJOeR5AQ_XeEhL6Eo3iE2lkzEzRs0H-y8E2-cIHX9d08rZjxq3hrpo";
 
         mockMvc.perform(
@@ -116,6 +118,17 @@ class ControllerEmployeeTest {
         });
     }
 
+    @Test
+    void getEmployeeUnauthorizedTokenNull() throws Exception {
+
+        mockMvc.perform(
+                get("/api/employees/current")
+                        .header("Authorization", "Bearer " + null)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isUnauthorized());
+    }
+
     private EmployeeRequest createEmployeeRequest() {
         EmployeeRequest employeeRequest = new EmployeeRequest();
         employeeRequest.setFullName("John Doe");
@@ -133,10 +146,10 @@ class ControllerEmployeeTest {
 
     private EmployeeRequest createEmployeeRequestWithEmptyFields() {
         EmployeeRequest employeeRequest = new EmployeeRequest();
-        // Set some fields to empty for bad request scenario
         employeeRequest.setFullName(" ");
         employeeRequest.setPhoneNumber(" ");
         employeeRequest.setCompany(" ");
+        employeeRequest.setPosition(" ");
         employeeRequest.setGender(" ");
         employeeRequest.setStreet(" ");
         employeeRequest.setCity(" ");
