@@ -31,7 +31,6 @@ public class CustomAuthoritiesFilter extends GenericFilterBean {
         response.setCharacterEncoding("UTF-8");
 
         String requestedPath = request.getRequestURI();
-        System.out.println(requestedPath);
         Map<String, List<String>> rolePathsMap = new HashMap<>();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -44,7 +43,6 @@ public class CustomAuthoritiesFilter extends GenericFilterBean {
                 rolePathsMap.put("ROLE_ADMIN", List.of(requestedPath));
                 rolePathsMap.put("ROLE_MANAGER", List.of(requestedPath));
             } else if (requestedPath.startsWith("/api/employees") || requestedPath.startsWith("/api/address") || requestedPath.startsWith("/api/reimbursements")) {
-                System.out.println(requestedPath);
                 rolePathsMap.put("ROLE_USER", List.of(requestedPath));
             } else {
                 throw new ServletException("Invalid path or insufficient privileges. Requested path: " + requestedPath);

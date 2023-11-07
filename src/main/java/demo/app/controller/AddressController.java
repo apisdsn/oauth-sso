@@ -6,7 +6,6 @@ import demo.app.model.WebResponse;
 import demo.app.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,9 +20,10 @@ public class AddressController {
     @Autowired
     private AddressService addressService;
 
+
     @PutMapping(path = "/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<AddressResponse> update(@RequestBody AddressRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal, Authentication auth) {
-        AddressResponse addressResponse = addressService.updateAddress(request, principal, auth);
+    public WebResponse<AddressResponse> update(@RequestBody AddressRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
+        AddressResponse addressResponse = addressService.updateAddress(request, principal);
         return WebResponse.<AddressResponse>builder().data(addressResponse).build();
     }
 }

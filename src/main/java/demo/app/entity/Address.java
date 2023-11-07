@@ -21,7 +21,7 @@ public class Address {
     private String street;
 
     private String city;
-    
+
     private String province;
 
     private String country;
@@ -30,7 +30,7 @@ public class Address {
     private String postalCode;
 
     @OneToOne
-    @JoinColumn(name = "employee_id")
+    @JoinColumn(name = "employee_id", referencedColumnName = "employee_id")
     @JsonIgnore
     private Employee employee;
 

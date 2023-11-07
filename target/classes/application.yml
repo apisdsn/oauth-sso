@@ -27,9 +27,11 @@ spring:
           issuer-uri: http://localhost:8080
           jwk-set-uri: http://localhost:8080/oauth/v2/keys
       opaque-token:
+
         introspection-uri: http://localhost:8080/oauth/v2/introspect
         client-id: 239415625104031749@i2dev
         client-secret: yPdYHyfEK4027P8OTYZxJUeggrxdq5miOHivChyEy60BAJkvdxfPwuRxouQuOB7M
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root

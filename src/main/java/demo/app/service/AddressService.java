@@ -10,7 +10,6 @@ import demo.app.validator.ValidationHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,7 +27,7 @@ public class AddressService {
     @Autowired
     private ValidationHelper validationHelper;
 
-    public AddressResponse updateAddress(AddressRequest request, OAuth2AuthenticatedPrincipal principal, Authentication auth) {
+    public AddressResponse updateAddress(AddressRequest request, OAuth2AuthenticatedPrincipal principal) {
 
         validationHelper.validate(request);
         String clientId = getClientIdFromPrincipal(principal);

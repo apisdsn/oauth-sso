@@ -1,8 +1,6 @@
 package demo.app.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import demo.app.entity.Employee;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
