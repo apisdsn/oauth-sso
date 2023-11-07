@@ -1,4 +1,8 @@
 ## configuration server local mac
+base:
+  oauth2:
+    issuer:
+      uri: http://localhost:8080
 server:
   port: 18090
   servlet:
@@ -24,14 +28,12 @@ spring:
     oauth2:
       resource-server:
         jwt:
-          issuer-uri: http://localhost:8080
-          jwk-set-uri: http://localhost:8080/oauth/v2/keys
+          issuer-uri: ${base.oauth2.issuer.uri}
+          jwk-set-uri: ${base.oauth2.issuer.uri}/oauth/v2/keys
       opaque-token:
-
-        introspection-uri: http://localhost:8080/oauth/v2/introspect
+        introspection-uri: ${base.oauth2.issuer.uri}/oauth/v2/introspect
         client-id: 239415625104031749@i2dev
         client-secret: yPdYHyfEK4027P8OTYZxJUeggrxdq5miOHivChyEy60BAJkvdxfPwuRxouQuOB7M
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
@@ -60,6 +62,8 @@ zitadel:
     org:
       project:
         roles-attribute: urn:zitadel:iam:org:project:239413432221171719:roles
+
+        
 #springdoc:
 #  oAuthFlow:
 #    authorizationUrl: http://localhost:8080/oauth/v2/authorize

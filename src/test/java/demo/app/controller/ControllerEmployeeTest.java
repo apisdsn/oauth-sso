@@ -15,13 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,10 +54,11 @@ class ControllerEmployeeTest {
 
         mockMvc.perform(
                 post("/api/employees/register")
-                        .header("Authorization", "Bearer " + token)
+                        .with(opaqueToken().authorities(List.of(new SimpleGrantedAuthority("openid, profile, email"), new SimpleGrantedAuthority("ROLE_USER"))))
+//                        .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest))
+//                        .content(objectMapper.writeValueAsString(employeeRequest))
         ).andExpectAll(
                 status().isCreated()
         ).andDo(result -> {
@@ -89,7 +93,6 @@ class ControllerEmployeeTest {
 
     @Test
     void registerEmployeeUnauthorizedTokenNull() throws Exception {
-
         mockMvc.perform(
                 post("/api/employees/register")
                         .header("Authorization", "Bearer " + null)
