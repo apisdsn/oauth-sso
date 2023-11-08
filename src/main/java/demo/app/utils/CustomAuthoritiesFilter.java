@@ -31,12 +31,14 @@ public class CustomAuthoritiesFilter extends GenericFilterBean {
         response.setCharacterEncoding("UTF-8");
 
         String requestedPath = request.getRequestURI();
-        Map<String, List<String>> rolePathsMap = new HashMap<>();
+        Map<String, List<String>> rolePathsMap = new LinkedHashMap<>();
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof OAuth2AuthenticatedPrincipal principal) {
             Collection<? extends GrantedAuthority> authorities = principal.getAuthorities();
             List<String> roles = authorities.stream().map(GrantedAuthority::getAuthority).toList();
+
             log.info("Roles: {}", roles);
 
             if (requestedPath.startsWith("/api/admin") || requestedPath.startsWith("/api/**")) {

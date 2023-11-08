@@ -14,24 +14,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class ControllerEmployeeTest {
+
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,23 +40,23 @@ class ControllerEmployeeTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private String token;
+
     @BeforeEach
     void setUp() {
         employeeRepository.deleteAll();
+        token = "ufs6Oiqp1-JyhvP8sFM8_7c2gq0F_3cysAKGGCzPoNqahGs4ZUuD1dBrneCYgfjdhE0Faw8";
     }
 
     @Test
     void registerEmployeeSuccessWithToken() throws Exception {
         EmployeeRequest employeeRequest = createEmployeeRequest();
-        String token = "hKNwHIDC8l8i2Ekm1qJOeR5AQ_XeEhL6Eo3iE2lkzEzRs0H-y8E2-cIHX9d08rZjxq3hrpo";
-
         mockMvc.perform(
                 post("/api/employees/register")
-                        .with(opaqueToken().authorities(List.of(new SimpleGrantedAuthority("openid, profile, email"), new SimpleGrantedAuthority("ROLE_USER"))))
-//                        .header("Authorization", "Bearer " + token)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(employeeRequest))
+                        .content(objectMapper.writeValueAsString(employeeRequest))
         ).andExpectAll(
                 status().isCreated()
         ).andDo(result -> {
@@ -74,11 +72,9 @@ class ControllerEmployeeTest {
         EmployeeRequest employeeRequest = createEmployeeRequestWithEmptyFields();
         createSampleEmployee();
 
-        String token = "hKNwHIDC8l8i2Ekm1qJOeR5AQ_XeEhL6Eo3iE2lkzEzRs0H-y8E2-cIHX9d08rZjxq3hrpo";
-
         mockMvc.perform(
                 post("/api/employees/register")
-                        .header("Authorization", "Bearer " + token)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeRequest))
@@ -95,7 +91,7 @@ class ControllerEmployeeTest {
     void registerEmployeeUnauthorizedTokenNull() throws Exception {
         mockMvc.perform(
                 post("/api/employees/register")
-                        .header("Authorization", "Bearer " + null)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + null)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
 
@@ -105,11 +101,10 @@ class ControllerEmployeeTest {
     @Test
     void getEmployeeCurrent() throws Exception {
         Employee employee = createSampleEmployee();
-        String token = "hKNwHIDC8l8i2Ekm1qJOeR5AQ_XeEhL6Eo3iE2lkzEzRs0H-y8E2-cIHX9d08rZjxq3hrpo";
 
         mockMvc.perform(
                 get("/api/employees/current")
-                        .header("Authorization", "Bearer " + token)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpectAll(
@@ -123,13 +118,64 @@ class ControllerEmployeeTest {
 
     @Test
     void getEmployeeUnauthorizedTokenNull() throws Exception {
-
         mockMvc.perform(
                 get("/api/employees/current")
-                        .header("Authorization", "Bearer " + null)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + null)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void updateEmployeeSuccessWithToken() throws Exception {
+        Employee employee = createSampleEmployee();
+        EmployeeRequest employeeRequest = createEmployeeRequest();
+
+        mockMvc.perform(
+                put("/api/employees/current")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest))
+
+        ).andExpectAll(status().isOk()).andDo(result -> {
+            WebResponse<EmployeeResponse> response = readValue(result, new TypeReference<>() {
+            });
+            assertEmployeeResponseEquals(employee, response.getData());
+        });
+    }
+
+    @Test
+    void updateEmployeeUnauthorizedTokenNull() throws Exception {
+        mockMvc.perform(
+                put("/api/employees/current")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + null)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+        ).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void updateEmployeeNotFoundClientId() throws Exception {
+        Employee employee = new Employee();
+        employee.setClientId("");
+        employee.setEmail("");
+        EmployeeRequest employeeRequest = createEmployeeRequestWithEmptyFields();
+
+        mockMvc.perform(
+                put("/api/employees/current")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest))
+        ).andExpectAll(
+                status().isNotFound()
+        ).andDo(result -> {
+            WebResponse<String> response = readValue(result, new TypeReference<>() {
+            });
+            assertNotNull(response.getErrors());
+        });
     }
 
     private EmployeeRequest createEmployeeRequest() {
@@ -149,16 +195,16 @@ class ControllerEmployeeTest {
 
     private EmployeeRequest createEmployeeRequestWithEmptyFields() {
         EmployeeRequest employeeRequest = new EmployeeRequest();
-        employeeRequest.setFullName(" ");
-        employeeRequest.setPhoneNumber(" ");
-        employeeRequest.setCompany(" ");
-        employeeRequest.setPosition(" ");
-        employeeRequest.setGender(" ");
-        employeeRequest.setStreet(" ");
-        employeeRequest.setCity(" ");
-        employeeRequest.setProvince(" ");
-        employeeRequest.setCountry(" ");
-        employeeRequest.setPostalCode(" ");
+        employeeRequest.setFullName("");
+        employeeRequest.setPhoneNumber("");
+        employeeRequest.setCompany("");
+        employeeRequest.setPosition("");
+        employeeRequest.setGender("");
+        employeeRequest.setStreet("");
+        employeeRequest.setCity("");
+        employeeRequest.setProvince("");
+        employeeRequest.setCountry("");
+        employeeRequest.setPostalCode("");
         return employeeRequest;
     }
 
