@@ -30,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class ControllerEmployeeTest {
 
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -177,6 +176,52 @@ class ControllerEmployeeTest {
             assertNotNull(response.getErrors());
         });
     }
+
+    @Test
+    void deleteEmployeeSuccessWithToken() throws Exception {
+        createSampleEmployee();
+
+        mockMvc.perform(delete("/api/employees/current")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+
+        ).andExpectAll(status().isOk()).andDo(result -> {
+            WebResponse<String> response = readValue(result, new TypeReference<>() {
+            });
+            assertEquals("Data has been removed from the database", response.getData());
+        });
+    }
+
+    @Test
+    void deleteEmployeeCurrentNotFoundClientId() throws Exception {
+        Employee employee = new Employee();
+        employee.setClientId("");
+        employee.setEmail("");
+
+        mockMvc.perform(delete("/api/employees/current")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpectAll(status().isNotFound()).andDo(result -> {
+            WebResponse<String> response = readValue(result, new TypeReference<>() {
+            });
+            assertNotNull(response.getErrors());
+        });
+    }
+
+    @Test
+    void deleteEmployeeUnauthorizedTokenNull() throws Exception {
+        createSampleEmployee();
+
+        mockMvc.perform(delete("/api/employees/current")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + null)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+
+        ).andExpect(status().isUnauthorized());
+    }
+
 
     private EmployeeRequest createEmployeeRequest() {
         EmployeeRequest employeeRequest = new EmployeeRequest();
