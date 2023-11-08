@@ -20,7 +20,6 @@ public class AddressController {
     @Autowired
     private AddressService addressService;
 
-
     @PutMapping(path = "/current", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<AddressResponse> update(@RequestBody AddressRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         AddressResponse addressResponse = addressService.updateAddress(request, principal);

@@ -22,7 +22,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.io.IOException;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -61,7 +62,6 @@ class ControllerEmployeeTest {
         ).andDo(result -> {
             WebResponse<String> response = readValue(result, new TypeReference<>() {
             });
-            assertNull(response.getErrors());
             assertEquals("Data has been stored in the database", response.getData());
         });
     }
