@@ -62,7 +62,7 @@ public class AddressService {
 
     private String getClientIdFromPrincipal(OAuth2AuthenticatedPrincipal principal) {
         Map<String, Object> attributes = principal.getAttributes();
-        return attributes.get("client_id").toString();
+        return attributes.get("sub").toString();
     }
 
     private Employee findEmployeeByClientId(String clientId) {
