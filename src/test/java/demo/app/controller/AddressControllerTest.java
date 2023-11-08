@@ -121,13 +121,32 @@ public class AddressControllerTest {
         });
     }
 
+    @Test
+    void updateAddressBadRequest() throws Exception {
+        AddressRequest addressRequest = new AddressRequest();
+        addressRequest.setCity("");
+        addressRequest.setProvince("");
+
+        mockMvc.perform(put("/api/address/current")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(addressRequest))
+        ).andExpectAll(status().isBadRequest()).andDo(result -> {
+            WebResponse<AddressResponse> response = readValue(result, new TypeReference<>() {
+            });
+            assertNotNull(response.getErrors());
+        });
+    }
+
     private <T> T readValue(MvcResult result, TypeReference<T> valueTypeRef) throws IOException {
         return objectMapper.readValue(result.getResponse().getContentAsString(), valueTypeRef);
     }
 
-    private Employee createSampleEmployee() {
+    private void createSampleEmployee() {
         Employee employee = new Employee();
-        employee.setClientId("239484551712276487@i2dev");
+        employee.setClientId("239414077758111751");
+//        employee.setClientId("239484551712276487@i2dev");
         employee.setEmail("user@i2dev.com");
         employee.setFullName("John Doe");
         employee.setPhoneNumber("123214125");
@@ -147,6 +166,5 @@ public class AddressControllerTest {
         address.setEmployee(employee);
 
         employeeRepository.save(employee);
-        return employee;
     }
 }
