@@ -7,8 +7,8 @@ server:
   port: 18090
   servlet:
     context-path: /
-  error:
-    include-message: always
+#  error:
+#    include-message: always
 spring:
   main:
     allow-circular-references: true
@@ -63,7 +63,7 @@ zitadel:
       project:
         roles-attribute: urn:zitadel:iam:org:project:239413432221171719:roles
 
-        
+
 #springdoc:
 #  oAuthFlow:
 #    authorizationUrl: http://localhost:8080/oauth/v2/authorize

@@ -7,6 +7,7 @@ import demo.app.model.EmployeeResponse;
 import demo.app.repository.EmployeeRepository;
 import demo.app.validator.ValidationHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
@@ -32,6 +33,10 @@ public class EmployeeService {
 
     @Transactional
     public void register(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal) {
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request cannot be null");
+        }
+
         validationHelper.validate(request);
         String clientId = getClientIdFromPrincipal(principal);
         String email = getEmailFromPrincipal(principal);
@@ -43,10 +48,13 @@ public class EmployeeService {
         }
 
         Employee employee = new Employee();
+        if (StringUtils.isBlank(request.getFullName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Full name cannot be null");
+        }
         employee.setClientId(clientId);
+        employee.setEmail(email);
         employee.setFullName(request.getFullName());
         employee.setPhoneNumber(request.getPhoneNumber());
-        employee.setEmail(email);
         employee.setCompany(request.getCompany());
         employee.setPosition(request.getPosition());
         employee.setGender(request.getGender());
