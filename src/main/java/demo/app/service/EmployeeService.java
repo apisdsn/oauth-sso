@@ -27,8 +27,6 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
     @Autowired
-    private AddressService addressService;
-    @Autowired
     private ReimbursementService reimbursementService;
 
     @Transactional
@@ -98,6 +96,9 @@ public class EmployeeService {
     @Transactional
     public EmployeeResponse update(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request cannot be null");
+        }
 
         String clientId = getClientIdFromPrincipal(principal);
         Employee employee = findEmployeeByClientId(clientId);
@@ -122,6 +123,7 @@ public class EmployeeService {
         }
     }
 
+    // admin or manager service
     @Transactional
     public void removeByClientId(String clientId) {
         Employee employee = findEmployeeByClientId(clientId);
@@ -142,8 +144,9 @@ public class EmployeeService {
                 .company(employee.getCompany())
                 .position(employee.getPosition())
                 .gender(employee.getGender())
-                .address(addressService.toAddressResponse(employee.getAddress()))
+                .address(employee.getAddress())
                 .reimbursements(employee.getReimbursements().stream().map(reimbursementService::toReimbursementResponse).toList())
+//                .address(addressService.toAddressResponse(employee.getAddress()))
                 .build();
     }
 

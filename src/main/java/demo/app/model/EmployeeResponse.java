@@ -1,5 +1,6 @@
 package demo.app.model;
 
+import demo.app.entity.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +29,10 @@ public class EmployeeResponse {
 
     private String gender;
 
-    private AddressResponse address;
+    private Address address;
 
     private List<ReimbursementResponse> reimbursements;
+
+
+//    private AddressResponse address;
 }

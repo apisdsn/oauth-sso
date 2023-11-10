@@ -1,8 +1,8 @@
 package demo.app.service;
 
-import demo.app.entity.Address;
 import demo.app.entity.Employee;
 import demo.app.model.EmployeeRequest;
+import demo.app.model.EmployeeResponse;
 import demo.app.repository.EmployeeRepository;
 import demo.app.validator.ValidationHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,10 +16,12 @@ import org.mockito.quality.Strictness;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,102 +32,101 @@ public class EmployeeServiceTest {
     @Mock
     private EmployeeRepository employeeRepository;
     @Mock
-    private AddressService addressService;
-    @Mock
     private ReimbursementService reimbursementService;
-    @Mock
-    private OAuth2AuthenticatedPrincipal principal;
-
     @InjectMocks
     private EmployeeService employeeService;
+
     private EmployeeRequest employeeRequest;
+    private OAuth2AuthenticatedPrincipal principal;
     private Employee employee;
-    private Address address;
+    
 
     @BeforeEach
-    public void setup() {
+    public void setUp() {
         employeeRequest = new EmployeeRequest();
+        principal = mock(OAuth2AuthenticatedPrincipal.class);
         employee = new Employee();
-        address = new Address();
-        employeeRequest.setFullName("test");
         employee.setReimbursements(new ArrayList<>());
-
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("sub", "123");
-        attributes.put("email", "test@test.com");
-        when(principal.getAttributes()).thenReturn(attributes);
     }
 
     @Test
-    void testRegisterWhenEmployeeRequestFullNameIsNullThenThrowResponseStatusException() {
-        employeeRequest.setFullName("");
+    public void testCreateEmployeeWhenValidRequestThenEmployeeCreated() {
+        employeeRequest.setFullName("test");
         validationHelper.validate(employeeRequest);
-        assertThrows(ResponseStatusException.class, () -> employeeService.register(employeeRequest, principal));
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123", "email", "test@test.com"));
+        when(employeeRepository.existsByClientId(anyString())).thenReturn(false);
+
+        employeeService.register(employeeRequest, principal);
+
+        verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
     @Test
-    void testRegisterWhenEmployeeRequestIsNullThenThrowResponseStatusException() {
-        validationHelper.validate((Object) null);
+    public void testCreateEmployeeWhenNullRequestThenBadRequest() {
         assertThrows(ResponseStatusException.class, () -> employeeService.register(null, principal));
     }
 
     @Test
-    void testRegisterWhenEmployeeExistsThenThrowResponseStatusException() {
-        validationHelper.validate(employeeRequest);
-        when(employeeRepository.existsByClientId(anyString())).thenReturn(true);
-        assertThrows(ResponseStatusException.class, () -> employeeService.register(employeeRequest, principal));
-    }
-
-    @Test
-    void testRegisterWhenEmployeeDoesNotExistThenSave() {
-        validationHelper.validate(employeeRequest);
-        when(employeeRepository.existsByClientId(anyString())).thenReturn(false);
-        employeeService.register(employeeRequest, principal);
-        verify(employeeRepository, times(1)).save(any(Employee.class));
-    }
-
-    @Test
-    void testGetCurrentWhenEmployeeExistsThenReturnEmployee() {
+    public void testGetEmployeeByIdWhenValidClientIdThenEmployeeReturned() {
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
-        employeeService.getCurrent(principal);
+
+        EmployeeResponse employeeResponse = employeeService.getCurrent(principal);
+
+        assertNotNull(employeeResponse);
         verify(employeeRepository, times(1)).findByClientId(anyString());
     }
 
     @Test
-    void testGetByClientIdWhenEmployeeExistsThenReturnEmployee() {
-        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
-        employeeService.getByClientId("123");
-        verify(employeeRepository, times(1)).findByClientId(anyString());
+    public void testGetEmployeeByIdWhenInvalidClientIdThenNotFound() {
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
+        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> employeeService.getCurrent(principal));
     }
 
     @Test
-    void testFindAllEmployeeThenReturnAllEmployees() {
-        when(employeeRepository.findAll()).thenReturn(Collections.singletonList(employee));
-        employeeService.findAllEmployee();
+    public void testGetAllEmployeesThenAllEmployeesReturned() {
+        when(employeeRepository.findAll()).thenReturn(List.of(employee));
+
+        List<EmployeeResponse> employeeResponses = employeeService.findAllEmployee();
+
+        assertNotNull(employeeResponses);
+        assertEquals(1, employeeResponses.size());
         verify(employeeRepository, times(1)).findAll();
-
-        assertEquals(1, employeeService.findAllEmployee().size());
-        assertNotNull(employee);
     }
 
     @Test
-    void testUpdateWhenEmployeeExistsThenSave() {
+    public void testUpdateEmployeeWhenValidRequestThenEmployeeUpdated() {
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
-        employeeService.update(employeeRequest, principal);
+
+        EmployeeResponse employeeResponse = employeeService.update(employeeRequest, principal);
+
+        assertNotNull(employeeResponse);
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
     @Test
-    void testRemoveCurrentWhenEmployeeExistsThenDelete() {
+    public void testUpdateEmployeeWhenNullRequestThenBadRequest() {
+        assertThrows(ResponseStatusException.class, () -> employeeService.update(null, principal));
+    }
+
+    @Test
+    public void testDeleteEmployeeWhenValidClientIdThenEmployeeDeleted() {
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
+
         employeeService.removeCurrent(principal);
+
         verify(employeeRepository, times(1)).delete(any(Employee.class));
     }
 
     @Test
-    void testRemoveByClientIdWhenEmployeeExistsThenDelete() {
-        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
-        employeeService.removeByClientId("123");
-        verify(employeeRepository, times(1)).delete(any(Employee.class));
+    public void testDeleteEmployeeWhenInvalidClientIdThenNotFound() {
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
+        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> employeeService.removeCurrent(principal));
     }
 }

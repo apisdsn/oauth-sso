@@ -1,9 +1,9 @@
 package demo.app.controller;
 
-import demo.app.model.EmployeeRequest;
-import demo.app.model.EmployeeResponse;
 import demo.app.model.WebResponse;
 import demo.app.service.EmployeeService;
+import demo.app.model.EmployeeRequest;
+import demo.app.model.EmployeeResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

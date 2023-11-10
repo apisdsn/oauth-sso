@@ -31,7 +31,7 @@ public class AuthoritiesExtractor {
 
         log.info("Scopes: {}", scopes);
         log.info("User Authorities: {}", userAuthorities);
-        
+
         List<String> allAuthorities = Stream.concat(scopes.stream(), userAuthorities.stream())
                 .collect(Collectors.toList());
         log.info("All Authorities: {}", allAuthorities);
