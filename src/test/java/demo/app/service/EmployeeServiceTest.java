@@ -11,8 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 public class EmployeeServiceTest {
     @Mock
     private ValidationHelper validationHelper;
@@ -39,25 +36,26 @@ public class EmployeeServiceTest {
     private EmployeeRequest employeeRequest;
     private OAuth2AuthenticatedPrincipal principal;
     private Employee employee;
-    
+
 
     @BeforeEach
     public void setUp() {
+        employeeRepository.deleteAll();
+        
         employeeRequest = new EmployeeRequest();
         principal = mock(OAuth2AuthenticatedPrincipal.class);
         employee = new Employee();
+        employeeRequest.setFullName("test");
         employee.setReimbursements(new ArrayList<>());
     }
 
     @Test
     public void testCreateEmployeeWhenValidRequestThenEmployeeCreated() {
-        employeeRequest.setFullName("test");
-        validationHelper.validate(employeeRequest);
         when(principal.getAttributes()).thenReturn(Map.of("sub", "123", "email", "test@test.com"));
         when(employeeRepository.existsByClientId(anyString())).thenReturn(false);
 
         employeeService.register(employeeRequest, principal);
-
+        verify(validationHelper, times(1)).validate(employeeRequest);
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
@@ -72,7 +70,6 @@ public class EmployeeServiceTest {
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
 
         EmployeeResponse employeeResponse = employeeService.getCurrent(principal);
-
         assertNotNull(employeeResponse);
         verify(employeeRepository, times(1)).findByClientId(anyString());
     }

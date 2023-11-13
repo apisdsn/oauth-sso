@@ -33,6 +33,4 @@ public class EmployeeResponse {
 
     private List<ReimbursementResponse> reimbursements;
 
-
-//    private AddressResponse address;
 }

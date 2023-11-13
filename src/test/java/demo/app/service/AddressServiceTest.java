@@ -45,6 +45,10 @@ public class AddressServiceTest {
 
     @BeforeEach
     public void setUp() {
+        addressRepository.deleteAll();
+        employeeRepository.deleteAll();
+        addressRepository.deleteAll();
+
         addressRequest = new AddressRequest();
         addressRequest.setStreet("123 Street");
         addressRequest.setCity("City");
@@ -72,9 +76,9 @@ public class AddressServiceTest {
 
     @Test
     public void testUpdateAddressWhenAddressIsUpdatedThenReturnUpdatedAddress() {
-        validationHelper.validate(addressRequest);
         when(employeeRepository.findByClientId("clientId")).thenReturn(Optional.of(employee));
         when(addressRepository.save(address)).thenReturn(address);
+
         verify(validationHelper, times(1)).validate(addressRequest);
 
         AddressResponse response = addressService.updateAddress(addressRequest, principal);
@@ -89,7 +93,6 @@ public class AddressServiceTest {
 
     @Test
     public void testUpdateAddressWhenAddressNotFoundThenThrowResponseStatusException() {
-        validationHelper.validate(addressRequest);
         employee.setAddress(null);
         when(employeeRepository.findByClientId("clientId")).thenReturn(Optional.of(employee));
         verify(validationHelper, times(1)).validate(addressRequest);

@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class ReimbursementServiceTest {
@@ -39,7 +40,6 @@ public class ReimbursementServiceTest {
     private ValidationHelper validationHelper;
     @InjectMocks
     private ReimbursementService reimbursementService;
-
     private ReimbursementRequest reimbursementRequest;
     private OAuth2AuthenticatedPrincipal principal;
     private Employee employee;
@@ -47,8 +47,12 @@ public class ReimbursementServiceTest {
 
     @BeforeEach
     public void setUp() {
+        reimbursementRepository.deleteAll();
+        employeeRepository.deleteAll();
+        
         reimbursementRequest = new ReimbursementRequest();
-        reimbursementRequest.setAmount(BigDecimal.valueOf(1000));
+
+        reimbursementRequest.setAmount(BigDecimal.valueOf(1000.00));
         reimbursementRequest.setActivity("Travel");
         reimbursementRequest.setTypeReimbursement("Transport");
         reimbursementRequest.setDescription("Travel to client location");
@@ -75,12 +79,19 @@ public class ReimbursementServiceTest {
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
         when(reimbursementRepository.save(any(Reimbursement.class))).thenReturn(reimbursement);
 
+
         ReimbursementResponse response = reimbursementService.create(reimbursementRequest, principal);
 
         verify(validationHelper, times(1)).validate(reimbursementRequest);
         verify(reimbursementRepository, times(1)).save(any(Reimbursement.class));
         assertNotNull(response);
+
         assertEquals(reimbursement.getReimbursementId(), response.getReimbursementId());
+        assertEquals(reimbursement.getStatus(), response.getStatus());
+        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), response.getAmount());
+        assertEquals(reimbursement.getActivity(), response.getActivity());
+        assertEquals(reimbursement.getTypeReimbursement(), response.getTypeReimbursement());
+        assertEquals(reimbursement.getDescription(), response.getDescription());
     }
 
     @Test
@@ -135,11 +146,21 @@ public class ReimbursementServiceTest {
         when(reimbursementRepository.findByStatusFalse()).thenReturn(Collections.singletonList(reimbursement));
 
         List<ReimbursementResponse> responses = reimbursementService.getReimbursementsWithStatusFalse();
+        System.out.println(responses);
 
         verify(reimbursementRepository, times(1)).findByStatusFalse();
         assertNotNull(responses);
         assertFalse(responses.isEmpty());
+
         assertEquals(reimbursement.getReimbursementId(), responses.get(0).getReimbursementId());
+        assertEquals(reimbursement.getStatus(), responses.get(0).getStatus());
+        assertEquals(reimbursement.getActivity(), responses.get(0).getActivity());
+        assertEquals(reimbursement.getTypeReimbursement(), responses.get(0).getTypeReimbursement());
+        assertEquals(reimbursement.getDescription(), responses.get(0).getDescription());
+        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), responses.get(0).getAmount());
+        assertEquals(reimbursement.getApprovedId(), responses.get(0).getApprovedId());
+        assertEquals(reimbursement.getApprovedName(), responses.get(0).getApprovedName());
+        assertEquals(reimbursement.getEmployee().getEmployeeId(), responses.get(0).getEmployeeId());
     }
 
     @Test
@@ -148,6 +169,11 @@ public class ReimbursementServiceTest {
 
         assertNotNull(response);
         assertEquals(reimbursement.getReimbursementId(), response.getReimbursementId());
+        assertEquals(reimbursement.getStatus(), response.getStatus());
+        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), response.getAmount());
+        assertEquals(reimbursement.getActivity(), response.getActivity());
+        assertEquals(reimbursement.getTypeReimbursement(), response.getTypeReimbursement());
+        assertEquals(reimbursement.getDescription(), response.getDescription());
     }
 
     @Test

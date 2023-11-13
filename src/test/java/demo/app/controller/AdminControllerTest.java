@@ -36,8 +36,6 @@ public class AdminControllerTest {
     @MockBean
     private EmployeeService employeeService;
 
-    @MockBean
-    private OAuth2AuthenticatedPrincipal principal;
 
     @Test
     public void testUpdateReimbursementByAdminWhenCalledWithValidParametersThenReturnReimbursementResponse() throws Exception {
