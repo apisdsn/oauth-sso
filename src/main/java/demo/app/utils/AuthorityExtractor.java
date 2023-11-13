@@ -19,8 +19,8 @@ import java.util.stream.Stream;
 
 @Component
 @Slf4j
-public class AuthoritiesExtractor {
-    private static final String ROLE_PREFIX = "ROLE_";
+public class AuthorityExtractor {
+    public static final String ROLE_PREFIX = "ROLE_";
 
     @Value("${zitadel.iam.org.project.roles-attribute}")
     private String ROLES_ATTRIBUTE;

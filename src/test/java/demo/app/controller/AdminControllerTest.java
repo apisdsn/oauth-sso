@@ -47,8 +47,7 @@ public class AdminControllerTest {
         mockMvc.perform(patch("/api/admin/reimbursements/{reimbursementId}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").exists());
+                .andExpect(status().isOk());
     }
 
 

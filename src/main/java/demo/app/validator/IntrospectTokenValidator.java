@@ -11,6 +11,8 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 
+import static demo.app.utils.AuthorityExtractor.ROLE_PREFIX;
+
 @Slf4j
 @Component
 public class IntrospectTokenValidator {
@@ -59,7 +61,7 @@ public class IntrospectTokenValidator {
 
         Map<String, Map<String, String>> projectRoles = (Map<String, Map<String, String>>) rolesObject;
         return projectRoles.keySet().stream()
-                .map(role -> "ROLE_" + role.toUpperCase())
+                .map(role -> ROLE_PREFIX + role.toUpperCase())
                 .anyMatch(role -> orScopes.stream()
                         .anyMatch(authority -> authority.getAuthority().equals(role)));
     }

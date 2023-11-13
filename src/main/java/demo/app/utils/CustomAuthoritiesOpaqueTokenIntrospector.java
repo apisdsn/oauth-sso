@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomAuthoritiesOpaqueTokenIntrospector implements OpaqueTokenIntrospector {
     @Autowired
-    private AuthoritiesExtractor authoritiesExtractor;
+    private AuthorityExtractor authorityExtractor;
 
     @Autowired
     private IntrospectTokenValidator introspectTokenValidator;
@@ -39,8 +39,8 @@ public class CustomAuthoritiesOpaqueTokenIntrospector implements OpaqueTokenIntr
     public OAuth2AuthenticatedPrincipal introspect(String token) {
         log.info("Token Introspect: {}", token);
         OAuth2AuthenticatedPrincipal principal = delegate().introspect(token);
-        introspectTokenValidator.validateToken(principal.getAttributes(), authoritiesExtractor.extractAuthorities(principal));
-        return new DefaultOAuth2AuthenticatedPrincipal(principal.getName(), principal.getAttributes(), authoritiesExtractor.extractAuthorities(principal));
+        introspectTokenValidator.validateToken(principal.getAttributes(), authorityExtractor.extractAuthorities(principal));
+        return new DefaultOAuth2AuthenticatedPrincipal(principal.getName(), principal.getAttributes(), authorityExtractor.extractAuthorities(principal));
     }
 }
 
