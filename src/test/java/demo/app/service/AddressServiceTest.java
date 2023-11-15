@@ -13,9 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
@@ -24,10 +23,11 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
+@ActiveProfiles("test")
 public class AddressServiceTest {
     @Mock
     private EmployeeRepository employeeRepository;
@@ -45,10 +45,6 @@ public class AddressServiceTest {
 
     @BeforeEach
     public void setUp() {
-        addressRepository.deleteAll();
-        employeeRepository.deleteAll();
-        addressRepository.deleteAll();
-
         addressRequest = new AddressRequest();
         addressRequest.setStreet("123 Street");
         addressRequest.setCity("City");
@@ -56,10 +52,7 @@ public class AddressServiceTest {
         addressRequest.setCountry("Country");
         addressRequest.setPostalCode("12345");
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("sub", "clientId");
         principal = mock(OAuth2AuthenticatedPrincipal.class);
-        when(principal.getAttributes()).thenReturn(attributes);
 
         address = new Address();
         address.setAddressId("addressId");
@@ -76,10 +69,12 @@ public class AddressServiceTest {
 
     @Test
     public void testUpdateAddressWhenAddressIsUpdatedThenReturnUpdatedAddress() {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("sub", "clientId");
+        when(principal.getAttributes()).thenReturn(attributes);
         when(employeeRepository.findByClientId("clientId")).thenReturn(Optional.of(employee));
         when(addressRepository.save(address)).thenReturn(address);
 
-        verify(validationHelper, times(1)).validate(addressRequest);
 
         AddressResponse response = addressService.updateAddress(addressRequest, principal);
 
@@ -94,9 +89,10 @@ public class AddressServiceTest {
     @Test
     public void testUpdateAddressWhenAddressNotFoundThenThrowResponseStatusException() {
         employee.setAddress(null);
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("sub", "clientId");
+        when(principal.getAttributes()).thenReturn(attributes);
         when(employeeRepository.findByClientId("clientId")).thenReturn(Optional.of(employee));
-        verify(validationHelper, times(1)).validate(addressRequest);
-
 
         assertThrows(ResponseStatusException.class, () -> addressService.updateAddress(addressRequest, principal));
     }

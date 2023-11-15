@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,19 +40,12 @@ public class Reimbursement {
 
     private Boolean status;
 
-//    @Lob
-//    private byte[] file;
-//
-//    @Column(name = "file_name")
-//    private String fileName;
-//
-//    @Column(name = "file_type")
-//    private String fileType;
-
-    @Column(name = "date_created")
+    @Column(name = "date_created", nullable = false, updatable = false)
+    @CreatedDate
     private LocalDateTime dateCreated;
 
     @Column(name = "date_updated")
+    @LastModifiedDate
     private LocalDateTime dateUpdated;
 
     @ManyToOne(fetch = FetchType.LAZY)

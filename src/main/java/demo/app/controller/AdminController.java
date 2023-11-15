@@ -1,11 +1,11 @@
 package demo.app.controller;
 
-import demo.app.service.EmployeeService;
-import demo.app.service.ReimbursementService;
 import demo.app.model.EmployeeResponse;
 import demo.app.model.ReimbursementRequest;
 import demo.app.model.ReimbursementResponse;
 import demo.app.model.WebResponse;
+import demo.app.service.EmployeeService;
+import demo.app.service.ReimbursementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,9 +25,9 @@ public class AdminController {
     private EmployeeService employeeService;
 
     // Reimbursement Controller - Admin
-    @PatchMapping(path = "/reimbursements/{reimbursementId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<ReimbursementResponse> updateReimbursementByAdmin(@PathVariable("reimbursementId") Long reimbursementId, @RequestBody ReimbursementRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
-        ReimbursementResponse reimbursementResponse = reimbursementService.updateReimbursementByAdmin(reimbursementId, request, principal);
+    @PatchMapping(path = "/reimbursements/{clientId}/{reimbursementId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public WebResponse<ReimbursementResponse> updateReimbursementByAdmin(@PathVariable("clientId") String clientId, @PathVariable("reimbursementId") Long reimbursementId, @RequestBody ReimbursementRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
+        ReimbursementResponse reimbursementResponse = reimbursementService.updateReimbursementByAdmin(clientId, reimbursementId, request, principal);
         return WebResponse.<ReimbursementResponse>builder().data(reimbursementResponse).build();
     }
 
@@ -39,8 +39,8 @@ public class AdminController {
     }
 
     @DeleteMapping("/reimbursements/{clientId}/{reimbursementId}")
-    public WebResponse<String> removeReimbursementByAdmin(@PathVariable("reimbursementId") Long reimbursementId, @PathVariable("clientId") String clientId) {
-        reimbursementService.removeReimbursementByAdmin(reimbursementId, clientId);
+    public WebResponse<String> removeReimbursementByAdmin(@PathVariable("clientId") String clientId, @PathVariable("reimbursementId") Long reimbursementId) {
+        reimbursementService.removeReimbursementByAdmin(clientId, reimbursementId);
         return WebResponse.<String>builder().data("OK").build();
     }
 

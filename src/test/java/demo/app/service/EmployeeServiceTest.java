@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 public class EmployeeServiceTest {
     @Mock
     private ValidationHelper validationHelper;
@@ -41,7 +43,7 @@ public class EmployeeServiceTest {
     @BeforeEach
     public void setUp() {
         employeeRepository.deleteAll();
-        
+
         employeeRequest = new EmployeeRequest();
         principal = mock(OAuth2AuthenticatedPrincipal.class);
         employee = new Employee();

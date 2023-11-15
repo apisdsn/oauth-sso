@@ -1,6 +1,18 @@
+#spring:
+#  profiles:
+#    active: local
+#---
+#spring:
+#  profiles:
+#    active: dev
+#---
+#spring:
+#  profiles:
+#    active: test
+
 spring:
   profiles:
-    active: dev
+    active: test
 
 
 #springdoc:

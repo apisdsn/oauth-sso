@@ -13,9 +13,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
+@ActiveProfiles("test")
 public class ReimbursementServiceTest {
     @Mock
     private EmployeeRepository employeeRepository;
@@ -49,9 +49,8 @@ public class ReimbursementServiceTest {
     public void setUp() {
         reimbursementRepository.deleteAll();
         employeeRepository.deleteAll();
-        
-        reimbursementRequest = new ReimbursementRequest();
 
+        reimbursementRequest = new ReimbursementRequest();
         reimbursementRequest.setAmount(BigDecimal.valueOf(1000.00));
         reimbursementRequest.setActivity("Travel");
         reimbursementRequest.setTypeReimbursement("Transport");
@@ -59,9 +58,9 @@ public class ReimbursementServiceTest {
         reimbursementRequest.setStatus(false);
 
         principal = mock(OAuth2AuthenticatedPrincipal.class);
-        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
 
         employee = new Employee();
+        employee.setFullName("John Doe");
         employee.setClientId("123");
 
         reimbursement = new Reimbursement();
@@ -76,9 +75,9 @@ public class ReimbursementServiceTest {
 
     @Test
     public void testCreateWhenAllParametersAreValidThenReturnReimbursementResponse() {
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
         when(reimbursementRepository.save(any(Reimbursement.class))).thenReturn(reimbursement);
-
 
         ReimbursementResponse response = reimbursementService.create(reimbursementRequest, principal);
 
@@ -95,7 +94,30 @@ public class ReimbursementServiceTest {
     }
 
     @Test
+    public void testCreateWhenReimbursementRequestIsInvalidThenThrowResponseStatusException() {
+        reimbursementRequest.setAmount(null);
+
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
+        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
+
+        assertThrows(IllegalArgumentException.class, () -> reimbursementService.create(reimbursementRequest, principal));
+
+        verify(validationHelper, times(1)).validate(reimbursementRequest);
+    }
+
+    @Test
+    public void testCreateWhenEmployeeIsNotFoundThenThrowResponseStatusException() {
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
+        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> reimbursementService.create(reimbursementRequest, principal));
+
+        verify(validationHelper, times(1)).validate(reimbursementRequest);
+    }
+
+    @Test
     public void testUpdateReimbursementUserWhenAllParametersAreValidThenReturnReimbursementResponse() {
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
         when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(any(Employee.class), anyLong())).thenReturn(Optional.of(reimbursement));
         when(reimbursementRepository.save(any(Reimbursement.class))).thenReturn(reimbursement);
@@ -106,19 +128,31 @@ public class ReimbursementServiceTest {
         verify(reimbursementRepository, times(1)).save(any(Reimbursement.class));
         assertNotNull(response);
         assertEquals(reimbursement.getReimbursementId(), response.getReimbursementId());
+        assertEquals(reimbursement.getStatus(), response.getStatus());
+        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), response.getAmount());
+        assertEquals(reimbursement.getActivity(), response.getActivity());
+        assertEquals(reimbursement.getTypeReimbursement(), response.getTypeReimbursement());
+        assertEquals(reimbursement.getDescription(), response.getDescription());
+
     }
 
     @Test
     public void testUpdateReimbursementByAdminWhenAllParametersAreValidThenReturnReimbursementResponse() {
-        when(reimbursementRepository.findById(anyLong())).thenReturn(Optional.of(reimbursement));
+        reimbursementRequest.setStatus(true);
+
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
+        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
+        when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(any(Employee.class), (anyLong()))).thenReturn(Optional.of(reimbursement));
         when(reimbursementRepository.save(any(Reimbursement.class))).thenReturn(reimbursement);
 
-        ReimbursementResponse response = reimbursementService.updateReimbursementByAdmin(1L, reimbursementRequest, principal);
+        ReimbursementResponse response = reimbursementService.updateReimbursementByAdmin("123", 1L, reimbursementRequest, principal);
 
         verify(validationHelper, times(1)).validate(reimbursementRequest);
         verify(reimbursementRepository, times(1)).save(any(Reimbursement.class));
         assertNotNull(response);
+
         assertEquals(reimbursement.getReimbursementId(), response.getReimbursementId());
+        assertEquals(reimbursement.getStatus(), response.getStatus());
     }
 
     @Test
@@ -126,13 +160,14 @@ public class ReimbursementServiceTest {
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
         when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(any(Employee.class), anyLong())).thenReturn(Optional.of(reimbursement));
 
-        reimbursementService.removeReimbursementByAdmin(1L, "123");
+        reimbursementService.removeReimbursementByAdmin("123", 1L);
 
         verify(reimbursementRepository, times(1)).delete(any(Reimbursement.class));
     }
 
     @Test
     public void testRemoveReimbursementByUserWhenAllParametersAreValidThenNoReturn() {
+        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
         when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(any(Employee.class), anyLong())).thenReturn(Optional.of(reimbursement));
 
@@ -183,4 +218,6 @@ public class ReimbursementServiceTest {
         assertNotNull(result);
         assertTrue(result.contains("Rp"));
     }
+
+    // ... rest of the test cases ...
 }

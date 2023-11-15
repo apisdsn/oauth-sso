@@ -1,29 +1,48 @@
 package demo.app.repository;
 
 import demo.app.entity.Address;
-import org.junit.jupiter.api.Test;
+import demo.app.entity.Employee;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ActiveProfiles("test")
+@Transactional
 public class AddressRepositoryTest {
-
     @Autowired
     private TestEntityManager entityManager;
 
     @Autowired
     private AddressRepository addressRepository;
 
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
     private Address address;
 
     @BeforeEach
     public void setUp() {
+        addressRepository.deleteAll();
+        employeeRepository.deleteAll();
+        Employee employee = new Employee();
+        employee.setClientId("123");
+        employee.setEmail("john.doe@example.com");
+        employee.setFullName("John Doe");
+        employee.setCompany("Acme Corporation");
+        employee.setPosition("Software Engineer");
+        employee.setGender("Male");
+
         address = new Address();
         address.setAddressId("123");
         address.setStreet("Test Street");
@@ -31,7 +50,11 @@ public class AddressRepositoryTest {
         address.setProvince("Test Province");
         address.setCountry("Test Country");
         address.setPostalCode("12345");
-        entityManager.persist(address);
+
+        employee.setAddress(address);
+        address.setEmployee(employee);
+
+        entityManager.persist(employee);
         entityManager.flush();
     }
 

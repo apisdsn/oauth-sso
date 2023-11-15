@@ -23,7 +23,7 @@ public class AuthorityExtractor {
     public static final String ROLE_PREFIX = "ROLE_";
 
     @Value("${zitadel.iam.org.project.roles-attribute}")
-    private String ROLES_ATTRIBUTE;
+    public String ROLES_ATTRIBUTE;
 
     public Collection<GrantedAuthority> extractAuthorities(OAuth2AuthenticatedPrincipal principal) {
         List<String> scopes = getScopesOrDefault(principal);

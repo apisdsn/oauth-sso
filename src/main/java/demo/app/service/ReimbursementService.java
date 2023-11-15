@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,21 +63,10 @@ public class ReimbursementService {
         Reimbursement reimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursementId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reimbursement is not found"));
 
-        if (request.getAmount() != null) {
-            reimbursement.setAmount(request.getAmount());
-        }
-
-        if (request.getDescription() != null) {
-            reimbursement.setDescription(request.getDescription());
-        }
-
-        if (request.getActivity() != null) {
-            reimbursement.setActivity(request.getActivity());
-        }
-
-        if (request.getTypeReimbursement() != null) {
-            reimbursement.setTypeReimbursement(request.getTypeReimbursement());
-        }
+        Optional.ofNullable(request.getAmount()).ifPresent(reimbursement::setAmount);
+        Optional.ofNullable(request.getDescription()).ifPresent(reimbursement::setDescription);
+        Optional.ofNullable(request.getActivity()).ifPresent(reimbursement::setActivity);
+        Optional.ofNullable(request.getTypeReimbursement()).ifPresent(reimbursement::setTypeReimbursement);
 
         reimbursement.setDateCreated(LocalDateTime.now());
 
@@ -87,12 +77,16 @@ public class ReimbursementService {
 
     // admin or manager service
     @Transactional
-    public ReimbursementResponse updateReimbursementByAdmin(Long reimbursementId, ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal) {
+    public ReimbursementResponse updateReimbursementByAdmin(String clientId, Long reimbursementId, ReimbursementRequest request, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
         String idApprovedBy = getClientIdFromPrincipal(principal);
         String nameApprovedBy = principal.getAttribute("name");
-        Reimbursement reimbursement = reimbursementRepository.findById(reimbursementId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reimbursement not found"));
+
+        Employee employee = employeeRepository.findByClientId(clientId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee is not found"));
+
+        Reimbursement reimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursementId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reimbursement is not found"));
         reimbursement.setStatus(request.getStatus());
         reimbursement.setApprovedId(idApprovedBy);
         reimbursement.setApprovedName(nameApprovedBy);
@@ -104,7 +98,7 @@ public class ReimbursementService {
     }
 
     @Transactional
-    public void removeReimbursementByAdmin(Long reimbursementId, String clientId) {
+    public void removeReimbursementByAdmin(String clientId, Long reimbursementId) {
         Employee employee = employeeRepository.findByClientId((clientId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee is not found"));
 
