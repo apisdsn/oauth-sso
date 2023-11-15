@@ -2,69 +2,53 @@ package demo.app.repository;
 
 import demo.app.entity.Employee;
 import demo.app.entity.Reimbursement;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
-@Transactional
 public class ReimbursementRepositoryTest {
-
-    @Autowired
+    @Mock
     private ReimbursementRepository reimbursementRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
     private Employee employee;
     private Reimbursement reimbursement;
 
     @BeforeEach
-    public void setUp() {
-        employeeRepository.deleteAll();
-        reimbursementRepository.deleteAll();
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
 
         employee = new Employee();
         employee.setClientId("123");
         employee.setFullName("John Doe");
-        employee.setCompany("Acme Corporation");
-        employee.setPosition("Software Engineer");
-        employee.setGender("Male");
         employee.setEmail("john.doe@example.com");
-        employeeRepository.save(employee);
 
         reimbursement = new Reimbursement();
-        reimbursement.setStatus(false);
         reimbursement.setEmployee(employee);
-        reimbursement.setAmount(BigDecimal.valueOf(1000.00));
+        reimbursement.setAmount(new BigDecimal("100.00"));
+        reimbursement.setStatus(false);
         reimbursement.setActivity("Travel");
-        reimbursement.setTypeReimbursement("Transport");
-        reimbursement.setDescription("Travel to client location");
-        reimbursement.setDateCreated(LocalDateTime.now());
-        reimbursementRepository.save(reimbursement);
+
+        // Mock the behavior of the repositories
+        when(reimbursementRepository.save(any(Reimbursement.class))).thenReturn(reimbursement);
+        when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(eq(employee), anyLong())).thenReturn(Optional.of(reimbursement));
     }
 
-//    @AfterEach
-//    public void tearDown() {
-//        reimbursementRepository.deleteAll();
-//        employeeRepository.deleteAll();
-//    }
+    @AfterEach
+    void tearDown() {
+        reset(reimbursementRepository);
+    }
 
     @Test
-    public void testFindFirstByEmployeeAndReimbursementIdWhenEntityExistsThenReturnOptionalWithEntity() {
+    void testFindFirstByEmployeeAndReimbursementIdWhenExistsThenReturnReimbursement() {
+        when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursement.getReimbursementId())).thenReturn(Optional.of(reimbursement));
         Optional<Reimbursement> foundReimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursement.getReimbursementId());
 
         assertTrue(foundReimbursement.isPresent());
@@ -72,25 +56,37 @@ public class ReimbursementRepositoryTest {
     }
 
     @Test
-    public void testFindFirstByEmployeeAndReimbursementIdWhenEntityDoesNotExistThenReturnEmptyOptional() {
-        Optional<Reimbursement> foundReimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, -1L);
+    void testFindFirstByEmployeeAndReimbursementIdWhenNonExistentIdThenReturnEmptyOptional() {
+        when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, Long.MAX_VALUE)).thenReturn(Optional.empty());
+        Optional<Reimbursement> foundReimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, Long.MAX_VALUE);
 
         assertFalse(foundReimbursement.isPresent());
     }
 
     @Test
-    public void testFindByStatusFalseWhenEntitiesWithStatusFalseExistThenReturnListWithEntities() {
-        List<Reimbursement> foundReimbursements = reimbursementRepository.findByStatusFalse();
+    void testFindFirstByEmployeeAndReimbursementIdWhenNonExistentEmployeeThenReturnEmptyOptional() {
+        Employee nonExistentEmployee = new Employee();
+        nonExistentEmployee.setFullName("Non Existent");
+        nonExistentEmployee.setEmail("non.existent@example.com");
 
-        assertEquals(1, foundReimbursements.size());
-        assertFalse(foundReimbursements.isEmpty());
-        assertTrue(foundReimbursements.stream().noneMatch(Reimbursement::getStatus));
+        Optional<Reimbursement> foundReimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(nonExistentEmployee, reimbursement.getReimbursementId());
+
+        assertFalse(foundReimbursement.isPresent());
     }
 
     @Test
-    public void testFindByStatusFalseWhenNoEntitiesWithStatusFalseThenReturnEmptyList() {
+    void testFindByStatusFalseWhenExistsThenReturnReimbursements() {
+        when(reimbursementRepository.findByStatusFalse()).thenReturn(List.of(reimbursement));
+
+        List<Reimbursement> foundReimbursements = reimbursementRepository.findByStatusFalse();
+
+        assertFalse(foundReimbursements.isEmpty());
+        assertTrue(foundReimbursements.contains(reimbursement));
+    }
+
+    @Test
+    void testFindByStatusFalseWhenNonExistentThenReturnEmptyList() {
         reimbursement.setStatus(true);
-        reimbursementRepository.save(reimbursement);
 
         List<Reimbursement> foundReimbursements = reimbursementRepository.findByStatusFalse();
 

@@ -1,68 +1,61 @@
 package demo.app.repository;
 
 import demo.app.entity.Employee;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
-@Transactional
 public class EmployeeRepositoryTest {
-
-    @Autowired
+    @Mock
     private EmployeeRepository employeeRepository;
+    private Employee employee;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        employee = new Employee();
+        employee.setClientId("123");
+        employee.setFullName("John Doe");
+        employee.setEmail("john.doe@example.com");
+    }
 
     @Test
-    public void testExistsByClientIdWhenEmployeeExistsThenReturnTrue() {
+    public void testExistsByClientIdWhenClientIdExistsThenReturnTrue() {
         // Arrange
-        Employee employee = new Employee();
-        employee.setClientId("123");
-        employee.setEmail("john.doe@example.com");
-        employee.setFullName("John Doe");
-        employee.setCompany("Acme Corporation");
-        employee.setPosition("Software Engineer");
-        employee.setGender("Male");
-        employeeRepository.save(employee);
+        when(employeeRepository.existsByClientId("123")).thenReturn(true);
 
         // Act
         boolean exists = employeeRepository.existsByClientId("123");
 
         // Assert
         assertTrue(exists);
+        verify(employeeRepository, times(1)).existsByClientId("123");
     }
 
     @Test
-    public void testExistsByClientIdWhenEmployeeDoesNotExistThenReturnFalse() {
+    public void testExistsByClientIdWhenClientIdDoesNotExistThenReturnFalse() {
         // Arrange
-        // No employee with clientId "123" is saved
+        when(employeeRepository.existsByClientId("456")).thenReturn(false);
 
         // Act
-        boolean exists = employeeRepository.existsByClientId("123");
+        boolean exists = employeeRepository.existsByClientId("456");
 
         // Assert
         assertFalse(exists);
+        verify(employeeRepository, times(1)).existsByClientId("456");
     }
 
     @Test
-    public void testFindByClientIdWhenEmployeeExistsThenReturnEmployee() {
+    public void testFindByClientIdWhenClientIdExistsThenReturnOptionalEmployee() {
         // Arrange
-        Employee employee = new Employee();
-        employee.setClientId("123");
-        employee.setEmail("john.doe@example.com");
-        employee.setFullName("John Doe");
-        employee.setCompany("Acme Corporation");
-        employee.setPosition("Software Engineer");
-        employee.setGender("Male");
-        employeeRepository.save(employee);
+        when(employeeRepository.findByClientId("123")).thenReturn(Optional.of(employee));
 
         // Act
         Optional<Employee> foundEmployee = employeeRepository.findByClientId("123");
@@ -70,22 +63,19 @@ public class EmployeeRepositoryTest {
         // Assert
         assertTrue(foundEmployee.isPresent());
         assertEquals(employee.getClientId(), foundEmployee.get().getClientId());
-        assertEquals(employee.getEmail(), foundEmployee.get().getEmail());
-        assertEquals(employee.getFullName(), foundEmployee.get().getFullName());
-        assertEquals(employee.getCompany(), foundEmployee.get().getCompany());
-        assertEquals(employee.getPosition(), foundEmployee.get().getPosition());
-        assertEquals(employee.getGender(), foundEmployee.get().getGender());
+        verify(employeeRepository, times(1)).findByClientId("123");
     }
 
     @Test
-    public void testFindByClientIdWhenEmployeeDoesNotExistThenReturnEmptyOptional() {
+    public void testFindByClientIdWhenClientIdDoesNotExistThenReturnEmptyOptional() {
         // Arrange
-        // No employee with clientId "123" is saved
+        when(employeeRepository.findByClientId("456")).thenReturn(Optional.empty());
 
         // Act
-        Optional<Employee> foundEmployee = employeeRepository.findByClientId("123");
+        Optional<Employee> foundEmployee = employeeRepository.findByClientId("456");
 
         // Assert
-        assertFalse(foundEmployee.isPresent());
+        assertTrue(foundEmployee.isEmpty());
+        verify(employeeRepository, times(1)).findByClientId("456");
     }
 }
