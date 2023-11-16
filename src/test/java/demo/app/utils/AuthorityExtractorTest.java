@@ -20,7 +20,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
 public class AuthorityExtractorTest {
-
     @Mock
     private OAuth2AuthenticatedPrincipal principal;
 

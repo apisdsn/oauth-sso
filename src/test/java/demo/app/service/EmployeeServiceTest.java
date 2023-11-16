@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,8 +43,6 @@ public class EmployeeServiceTest {
 
     @BeforeEach
     public void setUp() {
-        employeeRepository.deleteAll();
-
         employeeRequest = new EmployeeRequest();
         principal = mock(OAuth2AuthenticatedPrincipal.class);
         employee = new Employee();
@@ -53,8 +52,8 @@ public class EmployeeServiceTest {
 
     @Test
     public void testCreateEmployeeWhenValidRequestThenEmployeeCreated() {
-        when(principal.getAttributes()).thenReturn(Map.of("sub", "123", "email", "test@test.com"));
-        when(employeeRepository.existsByClientId(anyString())).thenReturn(false);
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123", "email", "test@test.com"));
+        given(employeeRepository.existsByClientId(anyString())).willReturn(false);
 
         employeeService.register(employeeRequest, principal);
         verify(validationHelper, times(1)).validate(employeeRequest);
@@ -68,8 +67,8 @@ public class EmployeeServiceTest {
 
     @Test
     public void testGetEmployeeByIdWhenValidClientIdThenEmployeeReturned() {
-        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
-        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
 
         EmployeeResponse employeeResponse = employeeService.getCurrent(principal);
         assertNotNull(employeeResponse);
@@ -78,15 +77,16 @@ public class EmployeeServiceTest {
 
     @Test
     public void testGetEmployeeByIdWhenInvalidClientIdThenNotFound() {
-        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
-        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.empty());
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class, () -> employeeService.getCurrent(principal));
+        verify(employeeRepository, times(1)).findByClientId(anyString());
     }
 
     @Test
     public void testGetAllEmployeesThenAllEmployeesReturned() {
-        when(employeeRepository.findAll()).thenReturn(List.of(employee));
+        given(employeeRepository.findAll()).willReturn(List.of(employee));
 
         List<EmployeeResponse> employeeResponses = employeeService.findAllEmployee();
 

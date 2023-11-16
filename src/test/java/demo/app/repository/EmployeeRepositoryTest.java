@@ -3,8 +3,9 @@ package demo.app.repository;
 import demo.app.entity.Employee;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.verify;
 
 @ActiveProfiles("test")
 @Transactional
+@ExtendWith(MockitoExtension.class)
 public class EmployeeRepositoryTest {
     @Mock
     private EmployeeRepository employeeRepository;
@@ -24,8 +26,6 @@ public class EmployeeRepositoryTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         employee = new Employee();
         employee.setClientId("123");
         employee.setFullName("John Doe");

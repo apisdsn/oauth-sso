@@ -5,8 +5,9 @@ import demo.app.entity.Reimbursement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @Transactional
+@ExtendWith(MockitoExtension.class)
 public class ReimbursementRepositoryTest {
     @Mock
     private ReimbursementRepository reimbursementRepository;
@@ -29,8 +31,6 @@ public class ReimbursementRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         employee = new Employee();
         employee.setClientId("123");
         employee.setFullName("John Doe");
@@ -59,6 +59,7 @@ public class ReimbursementRepositoryTest {
 
         assertTrue(foundReimbursement.isPresent());
         assertEquals(reimbursement.getReimbursementId(), foundReimbursement.get().getReimbursementId());
+        verify(reimbursementRepository, times(1)).findFirstByEmployeeAndReimbursementId(employee, reimbursement.getReimbursementId());
     }
 
     @Test
@@ -68,6 +69,7 @@ public class ReimbursementRepositoryTest {
         Optional<Reimbursement> foundReimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, Long.MAX_VALUE);
 
         assertFalse(foundReimbursement.isPresent());
+        verify(reimbursementRepository, times(1)).findFirstByEmployeeAndReimbursementId(employee, Long.MAX_VALUE);
     }
 
     @Test
@@ -77,7 +79,9 @@ public class ReimbursementRepositoryTest {
         nonExistentEmployee.setEmail("non.existent@example.com");
 
         Optional<Reimbursement> foundReimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(nonExistentEmployee, reimbursement.getReimbursementId());
+
         assertFalse(foundReimbursement.isPresent());
+        verify(reimbursementRepository, times(1)).findFirstByEmployeeAndReimbursementId(nonExistentEmployee, reimbursement.getReimbursementId());
     }
 
     @Test
@@ -85,8 +89,10 @@ public class ReimbursementRepositoryTest {
         given(reimbursementRepository.findByStatusFalse()).willReturn(List.of(reimbursement));
 
         List<Reimbursement> foundReimbursements = reimbursementRepository.findByStatusFalse();
+
         assertFalse(foundReimbursements.isEmpty());
         assertTrue(foundReimbursements.contains(reimbursement));
+        verify(reimbursementRepository, times(1)).findByStatusFalse();
     }
 
     @Test
@@ -96,5 +102,6 @@ public class ReimbursementRepositoryTest {
         List<Reimbursement> foundReimbursements = reimbursementRepository.findByStatusFalse();
 
         assertTrue(foundReimbursements.isEmpty());
+        verify(reimbursementRepository, times(1)).findByStatusFalse();
     }
 }
