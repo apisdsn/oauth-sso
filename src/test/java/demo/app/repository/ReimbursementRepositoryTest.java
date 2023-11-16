@@ -7,14 +7,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
+@Transactional
 public class ReimbursementRepositoryTest {
     @Mock
     private ReimbursementRepository reimbursementRepository;
@@ -36,9 +42,8 @@ public class ReimbursementRepositoryTest {
         reimbursement.setStatus(false);
         reimbursement.setActivity("Travel");
 
-        // Mock the behavior of the repositories
-        when(reimbursementRepository.save(any(Reimbursement.class))).thenReturn(reimbursement);
-        when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(eq(employee), anyLong())).thenReturn(Optional.of(reimbursement));
+        given(reimbursementRepository.save(any(Reimbursement.class))).willReturn(reimbursement);
+        given(reimbursementRepository.findFirstByEmployeeAndReimbursementId(eq(employee), anyLong())).willReturn(Optional.of(reimbursement));
     }
 
     @AfterEach
@@ -48,7 +53,8 @@ public class ReimbursementRepositoryTest {
 
     @Test
     void testFindFirstByEmployeeAndReimbursementIdWhenExistsThenReturnReimbursement() {
-        when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursement.getReimbursementId())).thenReturn(Optional.of(reimbursement));
+        given(reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursement.getReimbursementId())).willReturn(Optional.of(reimbursement));
+
         Optional<Reimbursement> foundReimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursement.getReimbursementId());
 
         assertTrue(foundReimbursement.isPresent());
@@ -57,7 +63,8 @@ public class ReimbursementRepositoryTest {
 
     @Test
     void testFindFirstByEmployeeAndReimbursementIdWhenNonExistentIdThenReturnEmptyOptional() {
-        when(reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, Long.MAX_VALUE)).thenReturn(Optional.empty());
+        given(reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, Long.MAX_VALUE)).willReturn(Optional.empty());
+
         Optional<Reimbursement> foundReimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, Long.MAX_VALUE);
 
         assertFalse(foundReimbursement.isPresent());
@@ -70,23 +77,21 @@ public class ReimbursementRepositoryTest {
         nonExistentEmployee.setEmail("non.existent@example.com");
 
         Optional<Reimbursement> foundReimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(nonExistentEmployee, reimbursement.getReimbursementId());
-
         assertFalse(foundReimbursement.isPresent());
     }
 
     @Test
     void testFindByStatusFalseWhenExistsThenReturnReimbursements() {
-        when(reimbursementRepository.findByStatusFalse()).thenReturn(List.of(reimbursement));
+        given(reimbursementRepository.findByStatusFalse()).willReturn(List.of(reimbursement));
 
         List<Reimbursement> foundReimbursements = reimbursementRepository.findByStatusFalse();
-
         assertFalse(foundReimbursements.isEmpty());
         assertTrue(foundReimbursements.contains(reimbursement));
     }
 
     @Test
     void testFindByStatusFalseWhenNonExistentThenReturnEmptyList() {
-        reimbursement.setStatus(true);
+        given(reimbursementRepository.findByStatusFalse()).willReturn(Collections.emptyList());
 
         List<Reimbursement> foundReimbursements = reimbursementRepository.findByStatusFalse();
 

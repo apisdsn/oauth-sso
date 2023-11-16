@@ -26,6 +26,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 
@@ -47,9 +48,6 @@ public class ReimbursementServiceTest {
 
     @BeforeEach
     public void setUp() {
-        reimbursementRepository.deleteAll();
-        employeeRepository.deleteAll();
-
         reimbursementRequest = new ReimbursementRequest();
         reimbursementRequest.setAmount(BigDecimal.valueOf(1000.00));
         reimbursementRequest.setActivity("Travel");
@@ -75,9 +73,9 @@ public class ReimbursementServiceTest {
 
     @Test
     public void testCreateWhenAllParametersAreValidThenReturnReimbursementResponse() {
-        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
-        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
-        when(reimbursementRepository.save(any(Reimbursement.class))).thenReturn(reimbursement);
+        given((principal.getAttributes())).willReturn(Map.of("sub", "123"));
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
+        given(reimbursementRepository.save(any(Reimbursement.class))).willReturn(reimbursement);
 
         ReimbursementResponse response = reimbursementService.create(reimbursementRequest, principal);
 

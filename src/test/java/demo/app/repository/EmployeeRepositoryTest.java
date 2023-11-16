@@ -5,12 +5,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+@ActiveProfiles("test")
+@Transactional
 public class EmployeeRepositoryTest {
     @Mock
     private EmployeeRepository employeeRepository;
@@ -28,39 +34,30 @@ public class EmployeeRepositoryTest {
 
     @Test
     public void testExistsByClientIdWhenClientIdExistsThenReturnTrue() {
-        // Arrange
-        when(employeeRepository.existsByClientId("123")).thenReturn(true);
+        given(employeeRepository.existsByClientId("123")).willReturn(true);
 
-        // Act
         boolean exists = employeeRepository.existsByClientId("123");
 
-        // Assert
         assertTrue(exists);
         verify(employeeRepository, times(1)).existsByClientId("123");
     }
 
     @Test
     public void testExistsByClientIdWhenClientIdDoesNotExistThenReturnFalse() {
-        // Arrange
-        when(employeeRepository.existsByClientId("456")).thenReturn(false);
+        given(employeeRepository.existsByClientId("456")).willReturn(false);
 
-        // Act
         boolean exists = employeeRepository.existsByClientId("456");
 
-        // Assert
         assertFalse(exists);
         verify(employeeRepository, times(1)).existsByClientId("456");
     }
 
     @Test
     public void testFindByClientIdWhenClientIdExistsThenReturnOptionalEmployee() {
-        // Arrange
-        when(employeeRepository.findByClientId("123")).thenReturn(Optional.of(employee));
+        given(employeeRepository.findByClientId("123")).willReturn(Optional.of(employee));
 
-        // Act
         Optional<Employee> foundEmployee = employeeRepository.findByClientId("123");
 
-        // Assert
         assertTrue(foundEmployee.isPresent());
         assertEquals(employee.getClientId(), foundEmployee.get().getClientId());
         verify(employeeRepository, times(1)).findByClientId("123");
@@ -68,13 +65,10 @@ public class EmployeeRepositoryTest {
 
     @Test
     public void testFindByClientIdWhenClientIdDoesNotExistThenReturnEmptyOptional() {
-        // Arrange
-        when(employeeRepository.findByClientId("456")).thenReturn(Optional.empty());
+        given(employeeRepository.findByClientId("456")).willReturn(Optional.empty());
 
-        // Act
         Optional<Employee> foundEmployee = employeeRepository.findByClientId("456");
 
-        // Assert
         assertTrue(foundEmployee.isEmpty());
         verify(employeeRepository, times(1)).findByClientId("456");
     }

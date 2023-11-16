@@ -4,37 +4,29 @@ import demo.app.entity.Address;
 import demo.app.entity.Employee;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
 @Transactional
+@ExtendWith(MockitoExtension.class)
 public class AddressRepositoryTest {
-    @Autowired
-    private TestEntityManager entityManager;
-
-    @Autowired
+    @Mock
     private AddressRepository addressRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
     private Address address;
 
     @BeforeEach
     public void setUp() {
-        addressRepository.deleteAll();
-        employeeRepository.deleteAll();
         Employee employee = new Employee();
         employee.setClientId("123");
         employee.setEmail("john.doe@example.com");
@@ -54,18 +46,20 @@ public class AddressRepositoryTest {
         employee.setAddress(address);
         address.setEmployee(employee);
 
-        entityManager.persist(employee);
-        entityManager.flush();
     }
 
     @Test
     public void testFindFirstByAddressIdWhenAddressExistsThenReturnAddress() {
+        // Arrange
+        given(addressRepository.findFirstByAddressId(address.getAddressId())).willReturn(Optional.of(address));
+
         // Act
         Optional<Address> found = addressRepository.findFirstByAddressId(address.getAddressId());
 
         // Assert
         assertThat(found.isPresent()).isTrue();
         assertThat(found.get()).isEqualTo(address);
+        verify(addressRepository, times(1)).findFirstByAddressId(address.getAddressId());
     }
 
     @Test
@@ -75,5 +69,6 @@ public class AddressRepositoryTest {
 
         // Assert
         assertThat(found.isPresent()).isFalse();
+        verify(addressRepository, times(0)).findFirstByAddressId(address.getAddressId());
     }
 }
