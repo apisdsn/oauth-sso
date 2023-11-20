@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -46,8 +47,8 @@ public class EmployeeService {
         }
 
         Employee employee = new Employee();
-        if (StringUtils.isBlank(request.getFullName())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Full name cannot be null");
+        if (request.getFullName() == null || StringUtils.isBlank(request.getFullName()) || Objects.equals(request.getFullName(), "")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Full name cannot be blank");
         }
         employee.setClientId(clientId);
         employee.setEmail(email);

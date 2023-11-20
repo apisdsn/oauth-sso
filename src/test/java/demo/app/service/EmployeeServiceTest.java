@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,8 +36,8 @@ public class EmployeeServiceTest {
     private ReimbursementService reimbursementService;
     @InjectMocks
     private EmployeeService employeeService;
-
     private EmployeeRequest employeeRequest;
+    @Mock
     private OAuth2AuthenticatedPrincipal principal;
     private Employee employee;
 
@@ -44,7 +45,7 @@ public class EmployeeServiceTest {
     @BeforeEach
     public void setUp() {
         employeeRequest = new EmployeeRequest();
-        principal = mock(OAuth2AuthenticatedPrincipal.class);
+//        principal = mock(OAuth2AuthenticatedPrincipal.class);
         employee = new Employee();
         employeeRequest.setFullName("test");
         employee.setReimbursements(new ArrayList<>());
@@ -61,8 +62,28 @@ public class EmployeeServiceTest {
     }
 
     @Test
+    public void testCreateEmployeeWhenFullNameBlankInvalidRequestThenBadRequest() {
+        employeeRequest.setFullName("");
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123", "email", "test@test.com"));
+        given(employeeRepository.existsByClientId(anyString())).willReturn(false);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.register(employeeRequest, principal));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Full name cannot be blank", exception.getReason());
+
+        verify(validationHelper, times(1)).validate(employeeRequest);
+        verify(employeeRepository, times(0)).save(any(Employee.class));
+    }
+
+    @Test
     public void testCreateEmployeeWhenNullRequestThenBadRequest() {
-        assertThrows(ResponseStatusException.class, () -> employeeService.register(null, principal));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.register(null, principal));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Request cannot be null", exception.getReason());
+
+        verify(validationHelper, times(0)).validate(employeeRequest);
+        verify(employeeRepository, times(0)).save(any(Employee.class));
     }
 
     @Test
