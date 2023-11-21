@@ -17,6 +17,12 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.2.2</version>
+        </dependency>
         <dependency>
             <groupId>com.c4-soft.springaddons</groupId>
             <artifactId>spring-addons-oauth2-test</artifactId>
