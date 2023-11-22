@@ -3,8 +3,8 @@
 //import com.fasterxml.jackson.databind.ObjectMapper;
 //import demo.app.model.ReimbursementRequest;
 //import demo.app.model.ReimbursementResponse;
+//import demo.app.model.WebResponse;
 //import demo.app.service.ReimbursementService;
-//import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
 //import org.mockito.Mockito;
 //import org.springframework.beans.factory.annotation.Autowired;
@@ -17,29 +17,24 @@
 //
 //import java.math.BigDecimal;
 //
+//import static org.mockito.ArgumentMatchers.any;
+//import static org.mockito.ArgumentMatchers.anyLong;
+//import static org.mockito.BDDMockito.given;
+//import static org.mockito.Mockito.times;
+//import static org.mockito.Mockito.verify;
 //import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+//
 //
 //@WebMvcTest(ReimbursementController.class)
 //@AutoConfigureMockMvc(addFilters = false)
 //public class ReimbursementControllerTest {
-//
 //    @Autowired
 //    private MockMvc mockMvc;
-//
 //    @MockBean
 //    private ReimbursementService reimbursementService;
-//
-//    @MockBean
-//    private OAuth2AuthenticatedPrincipal principal;
-//
+//    @Autowired
 //    private ObjectMapper objectMapper;
-//
-//    @BeforeEach
-//    public void setup() {
-//        objectMapper = new ObjectMapper();
-//    }
 //
 //    @Test
 //    public void testCreateReimbursementWhenValidRequestThenReturnCreated() throws Exception {
@@ -55,20 +50,17 @@
 //        response.setTypeReimbursement("Transport");
 //        response.setDescription("Travel to client");
 //
-//        Mockito.when(reimbursementService.create(Mockito.any(ReimbursementRequest.class), Mockito.any(OAuth2AuthenticatedPrincipal.class)))
-//                .thenReturn(response);
+//        given(reimbursementService.create(any(ReimbursementRequest.class), any(OAuth2AuthenticatedPrincipal.class))).willReturn(response);
 //
 //        mockMvc.perform(post("/api/reimbursements")
+//                        .accept(MediaType.APPLICATION_JSON)
 //                        .contentType(MediaType.APPLICATION_JSON)
 //                        .content(objectMapper.writeValueAsString(request)))
 //                .andExpect(status().isCreated())
-//                .andExpect(jsonPath("$.data.amount").value("Rp1.000,00"))
-//                .andExpect(jsonPath("$.data.activity").value("Travel"))
-//                .andExpect(jsonPath("$.data.typeReimbursement").value("Transport"))
-//                .andExpect(jsonPath("$.data.description").value("Travel to client"))
-//                .andReturn();
+//                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(response, null))));
 //
-//        Mockito.verify(reimbursementService, Mockito.times(1)).create(Mockito.any(ReimbursementRequest.class), Mockito.any(OAuth2AuthenticatedPrincipal.class));
+//        verify(reimbursementService, times(1)).create(any(ReimbursementRequest.class), any(OAuth2AuthenticatedPrincipal.class));
 //    }
 //
 //    @Test
@@ -86,8 +78,7 @@
 //        response.setTypeReimbursement("Food");
 //        response.setDescription("Lunch with client");
 //
-//        Mockito.when(reimbursementService.updateReimbursementUser(Mockito.anyLong(), Mockito.any(ReimbursementRequest.class), Mockito.any(OAuth2AuthenticatedPrincipal.class)))
-//                .thenReturn(response);
+//        given(reimbursementService.updateReimbursementUser(anyLong(), any(ReimbursementRequest.class), any(OAuth2AuthenticatedPrincipal.class))).willReturn(response);
 //
 //        mockMvc.perform(patch("/api/reimbursements/" + reimbursementId)
 //                        .contentType(MediaType.APPLICATION_JSON)
@@ -98,17 +89,16 @@
 //                .andExpect(jsonPath("$.data.typeReimbursement").value("Food"))
 //                .andExpect(jsonPath("$.data.description").value("Lunch with client"));
 //
-//        Mockito.verify(reimbursementService, Mockito.times(1)).updateReimbursementUser(Mockito.anyLong(), Mockito.any(ReimbursementRequest.class), Mockito.any(OAuth2AuthenticatedPrincipal.class));
+//        verify(reimbursementService, times(1)).updateReimbursementUser(Mockito.anyLong(), any(ReimbursementRequest.class), any(OAuth2AuthenticatedPrincipal.class));
 //    }
 //
 //    @Test
 //    public void testDeleteReimbursementWhenValidRequestThenReturnOk() throws Exception {
-//        Long reimbursementId = 1L;
 //
-//        mockMvc.perform(delete("/api/reimbursements/" + reimbursementId))
+//        mockMvc.perform(delete("/api/reimbursements/" + 1L))
 //                .andExpect(status().isOk())
 //                .andExpect(jsonPath("$.data").value("Reimbursement deleted"));
 //
-//        Mockito.verify(reimbursementService, Mockito.times(1)).removeReimbursementByUser(Mockito.anyLong(), Mockito.any(OAuth2AuthenticatedPrincipal.class));
+//        verify(reimbursementService, times(1)).removeReimbursementByUser(Mockito.anyLong(), any(OAuth2AuthenticatedPrincipal.class));
 //    }
 //}

@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -25,10 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class EmployeeControllerTest {
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private EmployeeService employeeService;
-
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -45,6 +44,9 @@ public class EmployeeControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("Data has been stored in the database", null))))
                 .andExpect(jsonPath("$.data").value("Data has been stored in the database"));
+
+        verify(employeeService, times(1)).register(any(EmployeeRequest.class), any());
+        verify(employeeService, times(1)).register(eq(request), any());
     }
 
     @Test
@@ -60,13 +62,17 @@ public class EmployeeControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Full name cannot be blank"))));
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Full name cannot be blank"))))
+                .andExpect(jsonPath("$.errors").value("Full name cannot be blank"));
+
+        verify(employeeService, times(1)).register(eq(request), any());
+        verify(employeeService, times(1)).register(any(EmployeeRequest.class), any());
     }
 
     @Test
     void testGetCurrentEmployeeWhenCurrentEmployeeThenSuccess() throws Exception {
         EmployeeResponse response = new EmployeeResponse();
-        when(employeeService.getCurrent(any())).thenReturn(response);
+        given(employeeService.getCurrent(any())).willReturn(response);
 
         mockMvc.perform(get("/api/employees/current")
                         .accept(MediaType.APPLICATION_JSON)
@@ -74,6 +80,9 @@ public class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(response, null))));
+
+        verify(employeeService, times(1)).getCurrent(any());
+        verify(employeeService, times(1)).getCurrent(eq(null));
     }
 
     @Test
@@ -85,14 +94,18 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Current employee not found"))));
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Current employee not found"))))
+                .andExpect(jsonPath("$.errors").value("Current employee not found"));
+
+        verify(employeeService, times(1)).getCurrent(any());
+        verify(employeeService, times(1)).getCurrent(eq(null));
     }
 
     @Test
     void testUpdateCurrentEmployeeWhenCurrentEmployeeThenSuccess() throws Exception {
         EmployeeRequest request = new EmployeeRequest();
         EmployeeResponse response = new EmployeeResponse();
-        when(employeeService.update(any(EmployeeRequest.class), any())).thenReturn(response);
+        given(employeeService.update(any(EmployeeRequest.class), any())).willReturn(response);
 
         mockMvc.perform(put("/api/employees/current")
                         .accept(MediaType.APPLICATION_JSON)
@@ -101,6 +114,9 @@ public class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(response, null))));
+
+        verify(employeeService, times(1)).update(any(EmployeeRequest.class), any());
+        verify(employeeService, times(1)).update(eq(request), any());
     }
 
     @Test
@@ -114,7 +130,11 @@ public class EmployeeControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Current employee not found"))));
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Current employee not found"))))
+                .andExpect(jsonPath("$.errors").value("Current employee not found"));
+
+        verify(employeeService, times(1)).update(any(EmployeeRequest.class), any());
+        verify(employeeService, times(1)).update(eq(request), any());
     }
 
     @Test
@@ -128,7 +148,11 @@ public class EmployeeControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Request cannot be null"))));
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Request cannot be null"))))
+                .andExpect(jsonPath("$.errors").value("Request cannot be null"));
+
+        verify(employeeService, times(1)).update(any(EmployeeRequest.class), any());
+        verify(employeeService, times(1)).update(eq(request), any());
     }
 
     @Test
@@ -140,7 +164,11 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("Data has been removed from the database", null))));
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("Data has been removed from the database", null))))
+                .andExpect(jsonPath("$.data").value("Data has been removed from the database"));
+
+        verify(employeeService, times(1)).removeCurrent(any());
+        verify(employeeService, times(1)).removeCurrent(eq(null));
     }
 
     @Test
@@ -152,6 +180,10 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Current employee not found"))));
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, "Current employee not found"))))
+                .andExpect(jsonPath("$.errors").value("Current employee not found"));
+
+        verify(employeeService, times(1)).removeCurrent(any());
+        verify(employeeService, times(1)).removeCurrent(eq(null));
     }
 }

@@ -1,8 +1,10 @@
 package demo.app.service;
 
 import demo.app.entity.Employee;
+import demo.app.entity.Reimbursement;
 import demo.app.model.EmployeeRequest;
 import demo.app.model.EmployeeResponse;
+import demo.app.model.ReimbursementResponse;
 import demo.app.repository.EmployeeRepository;
 import demo.app.validator.ValidationHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,10 +18,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
@@ -34,21 +34,23 @@ public class EmployeeServiceTest {
     private EmployeeRepository employeeRepository;
     @Mock
     private ReimbursementService reimbursementService;
+    @Mock
+    private OAuth2AuthenticatedPrincipal principal;
     @InjectMocks
     private EmployeeService employeeService;
     private EmployeeRequest employeeRequest;
-    @Mock
-    private OAuth2AuthenticatedPrincipal principal;
     private Employee employee;
 
 
     @BeforeEach
     public void setUp() {
         employeeRequest = new EmployeeRequest();
-//        principal = mock(OAuth2AuthenticatedPrincipal.class);
         employee = new Employee();
         employeeRequest.setFullName("test");
-        employee.setReimbursements(new ArrayList<>());
+        Reimbursement reimbursement = new Reimbursement();
+        reimbursement.setAmount(BigDecimal.valueOf(1000.00));
+        reimbursement.setDescription("Expense reimbursement");
+        employee.setReimbursements(new ArrayList<>(Collections.singletonList(reimbursement)));
     }
 
     @Test
@@ -90,8 +92,10 @@ public class EmployeeServiceTest {
     public void testGetEmployeeByIdWhenValidClientIdThenEmployeeReturned() {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
+        given(reimbursementService.toReimbursementResponse(any())).willReturn(new ReimbursementResponse());
 
         EmployeeResponse employeeResponse = employeeService.getCurrent(principal);
+
         assertNotNull(employeeResponse);
         verify(employeeRepository, times(1)).findByClientId(anyString());
     }
@@ -108,6 +112,7 @@ public class EmployeeServiceTest {
     @Test
     public void testGetAllEmployeesThenAllEmployeesReturned() {
         given(employeeRepository.findAll()).willReturn(List.of(employee));
+        given(reimbursementService.toReimbursementResponse(any())).willReturn(new ReimbursementResponse());
 
         List<EmployeeResponse> employeeResponses = employeeService.findAllEmployee();
 
@@ -120,6 +125,7 @@ public class EmployeeServiceTest {
     public void testUpdateEmployeeWhenValidRequestThenEmployeeUpdated() {
         when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
         when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
+        given(reimbursementService.toReimbursementResponse(any())).willReturn(new ReimbursementResponse());
 
         EmployeeResponse employeeResponse = employeeService.update(employeeRequest, principal);
 

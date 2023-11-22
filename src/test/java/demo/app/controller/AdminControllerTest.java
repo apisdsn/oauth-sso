@@ -72,7 +72,9 @@ public class AdminControllerTest {
         String expectedDateCreated = reimbursementResponse.getDateCreated().format(formatter);
         String expectedDateUpdated = reimbursementResponse.getDateUpdated().format(formatter);
 
-        mockMvc.perform(get("/api/admin/reimbursements/status"))
+        mockMvc.perform(get("/api/admin/reimbursements/status")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(Collections.singletonList(reimbursementResponse), null))))
@@ -91,6 +93,7 @@ public class AdminControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("OK", null))));
+
     }
 
     @Test
