@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -40,12 +38,12 @@ public class Reimbursement {
 
     private Boolean status;
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_created", nullable = false, updatable = false)
-    @CreatedDate
     private LocalDateTime dateCreated;
 
-    @Column(name = "date_updated")
-    @LastModifiedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "date_updated", nullable = false)
     private LocalDateTime dateUpdated;
 
     @ManyToOne(fetch = FetchType.LAZY)
