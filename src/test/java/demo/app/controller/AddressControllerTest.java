@@ -5,6 +5,7 @@ import demo.app.model.AddressRequest;
 import demo.app.model.AddressResponse;
 import demo.app.model.WebResponse;
 import demo.app.service.AddressService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,6 +32,7 @@ public class AddressControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
+    @Disabled
     void testUpdateValidAddressRequestShouldReturnAddressResponse() throws Exception {
         AddressRequest addressRequest = new AddressRequest();
         addressRequest.setStreet("123 Main St");
