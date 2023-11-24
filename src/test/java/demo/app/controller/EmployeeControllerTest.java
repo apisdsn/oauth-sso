@@ -43,7 +43,7 @@ public class EmployeeControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("Data has been stored in the database", null))))
-                .andExpect(jsonPath("$.data").value("Data has been stored in the database"));
+                .andExpect(jsonPath("$-.data").value("Data has been stored in the database"));
 
         verify(employeeService, times(1)).register(any(EmployeeRequest.class), any());
         verify(employeeService, times(1)).register(eq(request), any());

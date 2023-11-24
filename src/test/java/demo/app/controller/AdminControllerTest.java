@@ -93,19 +93,25 @@ public class AdminControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("OK", null))));
-
     }
 
     @Test
     void testGetEmployeeByClientIdWhenCalledWithValidClientIdThenReturnEmployeeResponse() throws Exception {
         EmployeeResponse response = new EmployeeResponse();
+        response.setClientId("123");
+        response.setFullName("John Doe");
+        response.setEmail("john.doe@example.com");
+
         when(employeeService.getByClientId(any())).thenReturn(response);
 
         mockMvc.perform(get("/api/admin/employees/{clientId}", "123"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(response, null))))
-                .andExpect(jsonPath("$.data").exists());
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.clientId").value("123"))
+                .andExpect(jsonPath("$.data.fullName").value("John Doe"))
+                .andExpect(jsonPath("$.data.email").value("john.doe@example.com"));
     }
 
     @Test

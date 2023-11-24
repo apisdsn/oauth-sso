@@ -48,7 +48,7 @@ public class ReimbursementServiceTest {
     private Reimbursement reimbursement;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         reimbursementRequest = new ReimbursementRequest();
         reimbursementRequest.setAmount(BigDecimal.valueOf(1000.00));
         reimbursementRequest.setActivity("Travel");

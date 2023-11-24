@@ -25,7 +25,7 @@ public class EmployeeRepositoryTest {
     private Employee employee;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         employee = new Employee();
         employee.setClientId("123");
         employee.setFullName("John Doe");
@@ -33,7 +33,7 @@ public class EmployeeRepositoryTest {
     }
 
     @Test
-    public void testExistsByClientIdWhenClientIdExistsThenReturnTrue() {
+    void testExistsByClientIdWhenClientIdExistsThenReturnTrue() {
         given(employeeRepository.existsByClientId("123")).willReturn(true);
 
         boolean exists = employeeRepository.existsByClientId("123");
@@ -43,7 +43,7 @@ public class EmployeeRepositoryTest {
     }
 
     @Test
-    public void testExistsByClientIdWhenClientIdDoesNotExistThenReturnFalse() {
+    void testExistsByClientIdWhenClientIdDoesNotExistThenReturnFalse() {
         given(employeeRepository.existsByClientId("456")).willReturn(false);
 
         boolean exists = employeeRepository.existsByClientId("456");
@@ -53,7 +53,7 @@ public class EmployeeRepositoryTest {
     }
 
     @Test
-    public void testFindByClientIdWhenClientIdExistsThenReturnOptionalEmployee() {
+    void testFindByClientIdWhenClientIdExistsThenReturnOptionalEmployee() {
         given(employeeRepository.findByClientId("123")).willReturn(Optional.of(employee));
 
         Optional<Employee> foundEmployee = employeeRepository.findByClientId("123");
@@ -64,7 +64,7 @@ public class EmployeeRepositoryTest {
     }
 
     @Test
-    public void testFindByClientIdWhenClientIdDoesNotExistThenReturnEmptyOptional() {
+    void testFindByClientIdWhenClientIdDoesNotExistThenReturnEmptyOptional() {
         given(employeeRepository.findByClientId("456")).willReturn(Optional.empty());
 
         Optional<Employee> foundEmployee = employeeRepository.findByClientId("456");

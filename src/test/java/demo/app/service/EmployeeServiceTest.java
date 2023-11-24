@@ -43,7 +43,7 @@ public class EmployeeServiceTest {
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         employeeRequest = new EmployeeRequest();
         employee = new Employee();
         employeeRequest.setFullName("test");
@@ -54,7 +54,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void testCreateEmployeeWhenValidRequestThenEmployeeCreated() {
+    void testCreateEmployeeWhenValidRequestThenEmployeeCreated() {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123", "email", "test@test.com"));
         given(employeeRepository.existsByClientId(anyString())).willReturn(false);
 
@@ -64,7 +64,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void testCreateEmployeeWhenFullNameBlankInvalidRequestThenBadRequest() {
+    void testCreateEmployeeWhenFullNameBlankInvalidRequestThenBadRequest() {
         employeeRequest.setFullName("");
         given(principal.getAttributes()).willReturn(Map.of("sub", "123", "email", "test@test.com"));
         given(employeeRepository.existsByClientId(anyString())).willReturn(false);
@@ -78,7 +78,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void testCreateEmployeeWhenNullRequestThenBadRequest() {
+    void testCreateEmployeeWhenNullRequestThenBadRequest() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.register(null, principal));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
@@ -89,19 +89,58 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void testGetEmployeeByIdWhenValidClientIdThenEmployeeReturned() {
-        given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
+    void testCreateEmployeeWhenExistingClientIdThenBadRequest() {
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123", "email", "test@test.com"));
+        given(employeeRepository.existsByClientId(anyString())).willReturn(true);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.register(employeeRequest, principal));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Employee already exists", exception.getReason());
+
+        verify(validationHelper, times(1)).validate(employeeRequest);
+        verify(employeeRepository, times(0)).save(any(Employee.class));
+    }
+
+    @Test
+    void testGetEmployeeByClientIdWhenValidThenEmployeeReturned() {
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
-        given(reimbursementService.toReimbursementResponse(any())).willReturn(new ReimbursementResponse());
 
-        EmployeeResponse employeeResponse = employeeService.getCurrent(principal);
+        EmployeeResponse response = employeeService.getByClientId(anyString());
 
-        assertNotNull(employeeResponse);
+        assertNotNull(response);
+        assertEquals(employee.getFullName(), response.getFullName());
+        assertEquals(employee.getEmail(), response.getEmail());
+
         verify(employeeRepository, times(1)).findByClientId(anyString());
     }
 
     @Test
-    public void testGetEmployeeByIdWhenInvalidClientIdThenNotFound() {
+    void testGetEmployeeCurrent() {
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123", "email", "test@test.com"));
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
+        EmployeeResponse response = employeeService.getCurrent(principal);
+
+        assertEquals(employee.getFullName(), response.getFullName());
+        assertEquals(employee.getEmail(), response.getEmail());
+
+        verify(employeeRepository, times(1)).findByClientId(anyString());
+    }
+
+    @Test
+    void testGetIfAttributesIsNullReturnNotFound() {
+        given(principal.getAttributes()).willReturn(null);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.getCurrent(principal));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals("Client ID not found", exception.getReason());
+
+        verify(principal, times(1)).getAttributes();
+    }
+
+    @Test
+    void testGetEmployeeByIdWhenInvalidClientIdThenNotFound() {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.empty());
 
@@ -110,7 +149,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void testGetAllEmployeesThenAllEmployeesReturned() {
+    void testGetAllEmployeesThenAllEmployeesReturned() {
         given(employeeRepository.findAll()).willReturn(List.of(employee));
         given(reimbursementService.toReimbursementResponse(any())).willReturn(new ReimbursementResponse());
 
@@ -122,9 +161,9 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void testUpdateEmployeeWhenValidRequestThenEmployeeUpdated() {
-        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
-        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
+    void testUpdateEmployeeWhenValidRequestThenEmployeeUpdated() {
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
         given(reimbursementService.toReimbursementResponse(any())).willReturn(new ReimbursementResponse());
 
         EmployeeResponse employeeResponse = employeeService.update(employeeRequest, principal);
@@ -134,14 +173,17 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void testUpdateEmployeeWhenNullRequestThenBadRequest() {
-        assertThrows(ResponseStatusException.class, () -> employeeService.update(null, principal));
+    void testUpdateEmployeeWhenNullRequestThenBadRequest() {
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.update(null, principal));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Request cannot be null", exception.getReason());
     }
 
     @Test
-    public void testDeleteEmployeeWhenValidClientIdThenEmployeeDeleted() {
-        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
-        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.of(employee));
+    void testDeleteEmployeeWhenValidClientIdThenEmployeeDeleted() {
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
 
         employeeService.removeCurrent(principal);
 
@@ -149,10 +191,53 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void testDeleteEmployeeWhenInvalidClientIdThenNotFound() {
-        when(principal.getAttributes()).thenReturn(Map.of("sub", "123"));
-        when(employeeRepository.findByClientId(anyString())).thenReturn(Optional.empty());
-
+    void testDeleteEmployeeWhenInvalidClientIdThenNotFound() {
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.empty());
         assertThrows(ResponseStatusException.class, () -> employeeService.removeCurrent(principal));
+    }
+
+    @Test
+    void testIfEmployeeExistsByClientIdWhenNullClientIdThenBadRequest() {
+        given(employeeRepository.existsByClientId(null)).willReturn(false);
+        boolean exists = employeeRepository.existsByClientId(null);
+        assertFalse(exists);
+    }
+
+    @Test
+    void testDeleteByClientIdWhenValidClientIdThenEmployeeDelete() {
+        Employee employee = new Employee();
+        employee.setClientId("123");
+        employee.setFullName("John Doe");
+        employee.setEmail("john.doe@example.com");
+
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
+
+        employeeService.removeByClientId("123");
+
+        verify(employeeRepository, times(1)).findByClientId("123");
+        verify(employeeRepository, times(1)).delete(employee);
+    }
+
+    @Test
+    void testDeleteByClientIdWhenValidClientIdIfEmployeeNotExistsThenNotFound() {
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.removeByClientId("123"));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals("Employee not found for the given clientId 123", exception.getReason());
+
+        verify(employeeRepository, times(1)).findByClientId("123");
+        verify(employeeRepository, times(0)).delete(any(Employee.class));
+    }
+
+    @Test
+    void testDeleteEmployeeByClientIdWhenNullThenNotFound() {
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.removeByClientId(null));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals("Employee not found for the given clientId null", exception.getReason());
+
+        verify(employeeRepository, times(0)).delete(any(Employee.class));
     }
 }

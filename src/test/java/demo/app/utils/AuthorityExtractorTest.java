@@ -26,7 +26,7 @@ public class AuthorityExtractorTest {
     private AuthorityExtractor authorityExtractor;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         authorityExtractor = new AuthorityExtractor();
         authorityExtractor.ROLES_ATTRIBUTE = "roles";
     }

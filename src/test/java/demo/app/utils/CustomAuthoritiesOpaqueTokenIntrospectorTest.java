@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CustomAuthoritiesOpaqueTokenIntrospectorTest {
+class CustomAuthoritiesOpaqueTokenIntrospectorTest {
     private static final String INTROSPECTION_URL = "https://server.example.com";
     private static final String CLIENT_ID = "client";
     private static final String CLIENT_SECRET = "secret";

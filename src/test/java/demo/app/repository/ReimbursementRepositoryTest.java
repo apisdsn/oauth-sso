@@ -2,7 +2,6 @@ package demo.app.repository;
 
 import demo.app.entity.Employee;
 import demo.app.entity.Reimbursement;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +17,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ActiveProfiles("test")
 @Transactional
@@ -41,16 +41,8 @@ public class ReimbursementRepositoryTest {
         reimbursement.setAmount(new BigDecimal("100.00"));
         reimbursement.setStatus(false);
         reimbursement.setActivity("Travel");
-
-        given(reimbursementRepository.save(any(Reimbursement.class))).willReturn(reimbursement);
-        given(reimbursementRepository.findFirstByEmployeeAndReimbursementId(eq(employee), anyLong())).willReturn(Optional.of(reimbursement));
     }
-
-    @AfterEach
-    void tearDown() {
-        reset(reimbursementRepository);
-    }
-
+    
     @Test
     void testFindFirstByEmployeeAndReimbursementIdWhenExistsThenReturnReimbursement() {
         given(reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursement.getReimbursementId())).willReturn(Optional.of(reimbursement));

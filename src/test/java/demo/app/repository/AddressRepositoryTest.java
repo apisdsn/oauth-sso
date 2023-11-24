@@ -26,7 +26,7 @@ public class AddressRepositoryTest {
     private Address address;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Employee employee = new Employee();
         employee.setClientId("123");
         employee.setEmail("john.doe@example.com");
@@ -48,7 +48,7 @@ public class AddressRepositoryTest {
     }
 
     @Test
-    public void testFindFirstByAddressIdWhenAddressExistsThenReturnAddress() {
+    void testFindFirstByAddressIdWhenAddressExistsThenReturnAddress() {
         // Arrange
         given(addressRepository.findFirstByAddressId(address.getAddressId())).willReturn(Optional.of(address));
 
@@ -62,7 +62,7 @@ public class AddressRepositoryTest {
     }
 
     @Test
-    public void testFindFirstByAddressIdWhenAddressDoesNotExistThenReturnEmptyOptional() {
+    void testFindFirstByAddressIdWhenAddressDoesNotExistThenReturnEmptyOptional() {
         // Act
         Optional<Address> found = addressRepository.findFirstByAddressId("nonexistent");
 
