@@ -37,11 +37,11 @@ public class AddressServiceTest {
     private AddressRepository addressRepository;
     @Mock
     private ValidationHelper validationHelper;
+    @Mock
+    private OAuth2AuthenticatedPrincipal principal;
     @InjectMocks
     private AddressService addressService;
     private AddressRequest addressRequest;
-    @Mock
-    private OAuth2AuthenticatedPrincipal principal;
     private Employee employee;
     private Address address;
 
@@ -75,14 +75,14 @@ public class AddressServiceTest {
         given(employeeRepository.findByClientId("clientId")).willReturn(Optional.of(employee));
         given(addressRepository.save(address)).willReturn(address);
 
-        AddressResponse response = addressService.updateAddress(addressRequest, principal);
+        AddressResponse addressResponse = addressService.updateAddress(addressRequest, principal);
 
-        assertEquals(address.getAddressId(), response.getAddressId());
-        assertEquals(address.getStreet(), response.getStreet());
-        assertEquals(address.getCity(), response.getCity());
-        assertEquals(address.getProvince(), response.getProvince());
-        assertEquals(address.getCountry(), response.getCountry());
-        assertEquals(address.getPostalCode(), response.getPostalCode());
+        assertEquals(address.getAddressId(), addressResponse.getAddressId());
+        assertEquals(address.getStreet(), addressResponse.getStreet());
+        assertEquals(address.getCity(), addressResponse.getCity());
+        assertEquals(address.getProvince(), addressResponse.getProvince());
+        assertEquals(address.getCountry(), addressResponse.getCountry());
+        assertEquals(address.getPostalCode(), addressResponse.getPostalCode());
 
         verify(validationHelper, times(1)).validate(addressRequest);
         verify(employeeRepository, times(1)).findByClientId("clientId");
@@ -109,13 +109,13 @@ public class AddressServiceTest {
 
     @Test
     void testToAddressResponse() {
-        AddressResponse response = addressService.toAddressResponse(address);
+        AddressResponse addressResponse = addressService.toAddressResponse(address);
 
-        assertEquals(address.getAddressId(), response.getAddressId());
-        assertEquals(address.getStreet(), response.getStreet());
-        assertEquals(address.getCity(), response.getCity());
-        assertEquals(address.getProvince(), response.getProvince());
-        assertEquals(address.getCountry(), response.getCountry());
-        assertEquals(address.getPostalCode(), response.getPostalCode());
+        assertEquals(address.getAddressId(), addressResponse.getAddressId());
+        assertEquals(address.getStreet(), addressResponse.getStreet());
+        assertEquals(address.getCity(), addressResponse.getCity());
+        assertEquals(address.getProvince(), addressResponse.getProvince());
+        assertEquals(address.getCountry(), addressResponse.getCountry());
+        assertEquals(address.getPostalCode(), addressResponse.getPostalCode());
     }
 }

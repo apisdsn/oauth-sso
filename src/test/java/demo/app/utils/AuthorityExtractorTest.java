@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 public class AuthorityExtractorTest {
     @Mock
     private OAuth2AuthenticatedPrincipal principal;
-
     private AuthorityExtractor authorityExtractor;
 
     @BeforeEach

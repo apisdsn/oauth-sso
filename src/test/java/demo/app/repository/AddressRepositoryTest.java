@@ -49,13 +49,10 @@ public class AddressRepositoryTest {
 
     @Test
     void testFindFirstByAddressIdWhenAddressExistsThenReturnAddress() {
-        // Arrange
         given(addressRepository.findFirstByAddressId(address.getAddressId())).willReturn(Optional.of(address));
 
-        // Act
         Optional<Address> found = addressRepository.findFirstByAddressId(address.getAddressId());
 
-        // Assert
         assertThat(found.isPresent()).isTrue();
         assertThat(found.get()).isEqualTo(address);
         verify(addressRepository, times(1)).findFirstByAddressId(address.getAddressId());
@@ -63,10 +60,8 @@ public class AddressRepositoryTest {
 
     @Test
     void testFindFirstByAddressIdWhenAddressDoesNotExistThenReturnEmptyOptional() {
-        // Act
         Optional<Address> found = addressRepository.findFirstByAddressId("nonexistent");
 
-        // Assert
         assertThat(found.isPresent()).isFalse();
         verify(addressRepository, times(0)).findFirstByAddressId(address.getAddressId());
     }

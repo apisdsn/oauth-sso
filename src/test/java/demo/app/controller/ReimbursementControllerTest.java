@@ -36,25 +36,25 @@ public class ReimbursementControllerTest {
 
     @Test
     void testCreateReimbursementWhenValidRequestThenReturnCreated() throws Exception {
-        ReimbursementRequest request = new ReimbursementRequest();
-        request.setAmount(new BigDecimal(1000));
-        request.setActivity("Travel");
-        request.setTypeReimbursement("Transport");
-        request.setDescription("Travel to client");
-        ReimbursementResponse response = new ReimbursementResponse();
-        response.setReimbursementId(1L);
-        response.setAmount("Rp1.000,00");
-        response.setActivity("Travel");
-        response.setTypeReimbursement("Transport");
-        response.setDescription("Travel to client");
-        given(reimbursementService.create(any(ReimbursementRequest.class), any())).willReturn(response);
+        ReimbursementRequest reimbursementRequest = new ReimbursementRequest();
+        reimbursementRequest.setAmount(new BigDecimal(1000));
+        reimbursementRequest.setActivity("Travel");
+        reimbursementRequest.setTypeReimbursement("Transport");
+        reimbursementRequest.setDescription("Travel to client");
+        ReimbursementResponse reimbursementResponse = new ReimbursementResponse();
+        reimbursementResponse.setReimbursementId(1L);
+        reimbursementResponse.setAmount("Rp1.000,00");
+        reimbursementResponse.setActivity("Travel");
+        reimbursementResponse.setTypeReimbursement("Transport");
+        reimbursementResponse.setDescription("Travel to client");
+        given(reimbursementService.create(any(ReimbursementRequest.class), any())).willReturn(reimbursementResponse);
 
         mockMvc.perform(post("/api/reimbursements")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(reimbursementRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(response, null))))
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(reimbursementResponse, null))))
                 .andExpect(jsonPath("data.reimbursementId").value(1L))
                 .andExpect(jsonPath("data.amount").value("Rp1.000,00"))
                 .andExpect(jsonPath("data.activity").value("Travel"))
@@ -73,26 +73,26 @@ public class ReimbursementControllerTest {
         reimbursement.setActivity("Travel");
         reimbursement.setTypeReimbursement("Transport");
 
-        ReimbursementRequest request = new ReimbursementRequest();
-        request.setAmount(new BigDecimal(2000));
-        request.setActivity("Meal");
-        request.setTypeReimbursement("Food");
-        request.setDescription("Lunch with client");
+        ReimbursementRequest reimbursementRequest = new ReimbursementRequest();
+        reimbursementRequest.setAmount(new BigDecimal(2000));
+        reimbursementRequest.setActivity("Meal");
+        reimbursementRequest.setTypeReimbursement("Food");
+        reimbursementRequest.setDescription("Lunch with client");
 
-        ReimbursementResponse response = new ReimbursementResponse();
-        response.setAmount("Rp2.000,00");
-        response.setActivity("Meal");
-        response.setTypeReimbursement("Food");
-        response.setDescription("Lunch with client");
+        ReimbursementResponse reimbursementResponse = new ReimbursementResponse();
+        reimbursementResponse.setAmount("Rp2.000,00");
+        reimbursementResponse.setActivity("Meal");
+        reimbursementResponse.setTypeReimbursement("Food");
+        reimbursementResponse.setDescription("Lunch with client");
 
-        given(reimbursementService.updateReimbursementUser(anyLong(), any(ReimbursementRequest.class), any())).willReturn(response);
+        given(reimbursementService.updateReimbursementUser(anyLong(), any(ReimbursementRequest.class), any())).willReturn(reimbursementResponse);
 
         mockMvc.perform(patch("/api/reimbursements/" + 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(reimbursementRequest)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(response, null))))
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(reimbursementResponse, null))))
                 .andExpect(jsonPath("$.data.amount").value("Rp2.000,00"))
                 .andExpect(jsonPath("$.data.activity").value("Meal"))
                 .andExpect(jsonPath("$.data.typeReimbursement").value("Food"))

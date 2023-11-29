@@ -13,9 +13,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -23,7 +23,6 @@ import java.util.Collections;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -44,17 +43,38 @@ public class AdminControllerTest {
 
     @Test
     void testUpdateReimbursementByAdminWhenCalledWithValidParametersThenReturnReimbursementResponse() throws Exception {
-        ReimbursementResponse response = new ReimbursementResponse();
-        ReimbursementRequest request = new ReimbursementRequest();
-        given(reimbursementService.updateReimbursementByAdmin(any(), anyLong(), any(ReimbursementRequest.class), any(OAuth2AuthenticatedPrincipal.class))).willReturn(response);
+        ReimbursementRequest reimbursementRequest = new ReimbursementRequest();
+        reimbursementRequest.setAmount(BigDecimal.valueOf(100000.00));
+        reimbursementRequest.setStatus(false);
+        reimbursementRequest.setActivity("Travel");
+        reimbursementRequest.setTypeReimbursement("Transport");
+        reimbursementRequest.setDescription("Travel to client location");
+
+        ReimbursementResponse reimbursementResponse = new ReimbursementResponse();
+        reimbursementResponse.setReimbursementId(1L);
+        reimbursementResponse.setAmount("Rp.100000.00");
+        reimbursementResponse.setStatus(false);
+        reimbursementResponse.setDateCreated(LocalDateTime.now());
+        reimbursementResponse.setDateUpdated(LocalDateTime.now());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String expectedDateCreated = reimbursementResponse.getDateCreated().format(formatter);
+        String expectedDateUpdated = reimbursementResponse.getDateUpdated().format(formatter);
+
+        given(reimbursementService.updateReimbursementByAdmin(any(), anyLong(), any(ReimbursementRequest.class), any())).willReturn(reimbursementResponse);
 
         mockMvc.perform(patch("/api/admin/reimbursements/{clientId}/{reimbursementId}", "123", 1L)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(reimbursementRequest)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(null, null))));
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(reimbursementResponse, null))))
+                .andExpect(jsonPath("$.data.reimbursementId").value(1L))
+                .andExpect(jsonPath("$.data.amount").value("Rp.100000.00"))
+                .andExpect(jsonPath("$.data.status").value(false))
+                .andExpect(jsonPath("$.data.dateCreated").value(expectedDateCreated))
+                .andExpect(jsonPath("$.data.dateUpdated").value(expectedDateUpdated));
     }
 
     @Test
@@ -97,17 +117,17 @@ public class AdminControllerTest {
 
     @Test
     void testGetEmployeeByClientIdWhenCalledWithValidClientIdThenReturnEmployeeResponse() throws Exception {
-        EmployeeResponse response = new EmployeeResponse();
-        response.setClientId("123");
-        response.setFullName("John Doe");
-        response.setEmail("john.doe@example.com");
+        EmployeeResponse employeeResponse = new EmployeeResponse();
+        employeeResponse.setClientId("123");
+        employeeResponse.setFullName("John Doe");
+        employeeResponse.setEmail("john.doe@example.com");
 
-        when(employeeService.getByClientId(any())).thenReturn(response);
+        given(employeeService.getByClientId(any())).willReturn(employeeResponse);
 
         mockMvc.perform(get("/api/admin/employees/{clientId}", "123"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(response, null))))
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(employeeResponse, null))))
                 .andExpect(jsonPath("$.data").exists())
                 .andExpect(jsonPath("$.data.clientId").value("123"))
                 .andExpect(jsonPath("$.data.fullName").value("John Doe"))
@@ -116,7 +136,7 @@ public class AdminControllerTest {
 
     @Test
     void testGetAllEmployeesWhenCalledThenReturnListOfEmployeeResponse() throws Exception {
-        when(employeeService.findAllEmployee()).thenReturn(Collections.emptyList());
+        given(employeeService.findAllEmployee()).willReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/admin/employees/all"))
                 .andExpect(status().isOk())

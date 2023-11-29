@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
@@ -76,18 +77,18 @@ public class ReimbursementServiceTest {
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
         given(reimbursementRepository.save(any(Reimbursement.class))).willReturn(reimbursement);
 
-        ReimbursementResponse response = reimbursementService.create(reimbursementRequest, principal);
+        ReimbursementResponse reimbursementResponse = reimbursementService.create(reimbursementRequest, principal);
 
         verify(validationHelper, times(1)).validate(reimbursementRequest);
         verify(reimbursementRepository, times(1)).save(any(Reimbursement.class));
-        assertNotNull(response);
 
-        assertEquals(reimbursement.getReimbursementId(), response.getReimbursementId());
-        assertEquals(reimbursement.getStatus(), response.getStatus());
-        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), response.getAmount());
-        assertEquals(reimbursement.getActivity(), response.getActivity());
-        assertEquals(reimbursement.getTypeReimbursement(), response.getTypeReimbursement());
-        assertEquals(reimbursement.getDescription(), response.getDescription());
+        assertNotNull(reimbursementResponse);
+        assertEquals(reimbursement.getReimbursementId(), reimbursementResponse.getReimbursementId());
+        assertEquals(reimbursement.getStatus(), reimbursementResponse.getStatus());
+        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), reimbursementResponse.getAmount());
+        assertEquals(reimbursement.getActivity(), reimbursementResponse.getActivity());
+        assertEquals(reimbursement.getTypeReimbursement(), reimbursementResponse.getTypeReimbursement());
+        assertEquals(reimbursement.getDescription(), reimbursementResponse.getDescription());
     }
 
     @Test
@@ -97,7 +98,10 @@ public class ReimbursementServiceTest {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
 
-        assertThrows(IllegalArgumentException.class, () -> reimbursementService.create(reimbursementRequest, principal));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reimbursementService.create(reimbursementRequest, principal));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Amount cannot be zero or null", exception.getReason());
 
         verify(validationHelper, times(1)).validate(reimbursementRequest);
     }
@@ -107,7 +111,10 @@ public class ReimbursementServiceTest {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.empty());
 
-        assertThrows(ResponseStatusException.class, () -> reimbursementService.create(reimbursementRequest, principal));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reimbursementService.create(reimbursementRequest, principal));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals("Employee not found for the given clientId 123", exception.getReason());
 
         verify(validationHelper, times(1)).validate(reimbursementRequest);
     }
@@ -119,17 +126,17 @@ public class ReimbursementServiceTest {
         given(reimbursementRepository.findFirstByEmployeeAndReimbursementId(any(Employee.class), anyLong())).willReturn(Optional.of(reimbursement));
         given(reimbursementRepository.save(any(Reimbursement.class))).willReturn(reimbursement);
 
-        ReimbursementResponse response = reimbursementService.updateReimbursementUser(1L, reimbursementRequest, principal);
+        ReimbursementResponse reimbursementResponse = reimbursementService.updateReimbursementUser(1L, reimbursementRequest, principal);
 
         verify(validationHelper, times(1)).validate(reimbursementRequest);
         verify(reimbursementRepository, times(1)).save(any(Reimbursement.class));
-        assertNotNull(response);
-        assertEquals(reimbursement.getReimbursementId(), response.getReimbursementId());
-        assertEquals(reimbursement.getStatus(), response.getStatus());
-        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), response.getAmount());
-        assertEquals(reimbursement.getActivity(), response.getActivity());
-        assertEquals(reimbursement.getTypeReimbursement(), response.getTypeReimbursement());
-        assertEquals(reimbursement.getDescription(), response.getDescription());
+        assertNotNull(reimbursementResponse);
+        assertEquals(reimbursement.getReimbursementId(), reimbursementResponse.getReimbursementId());
+        assertEquals(reimbursement.getStatus(), reimbursementResponse.getStatus());
+        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), reimbursementResponse.getAmount());
+        assertEquals(reimbursement.getActivity(), reimbursementResponse.getActivity());
+        assertEquals(reimbursement.getTypeReimbursement(), reimbursementResponse.getTypeReimbursement());
+        assertEquals(reimbursement.getDescription(), reimbursementResponse.getDescription());
 
     }
 
@@ -142,14 +149,14 @@ public class ReimbursementServiceTest {
         given(reimbursementRepository.findFirstByEmployeeAndReimbursementId(any(Employee.class), (anyLong()))).willReturn(Optional.of(reimbursement));
         given(reimbursementRepository.save(any(Reimbursement.class))).willReturn(reimbursement);
 
-        ReimbursementResponse response = reimbursementService.updateReimbursementByAdmin("123", 1L, reimbursementRequest, principal);
+        ReimbursementResponse reimbursementResponse = reimbursementService.updateReimbursementByAdmin("123", 1L, reimbursementRequest, principal);
 
         verify(validationHelper, times(1)).validate(reimbursementRequest);
         verify(reimbursementRepository, times(1)).save(any(Reimbursement.class));
-        assertNotNull(response);
+        assertNotNull(reimbursementResponse);
 
-        assertEquals(reimbursement.getReimbursementId(), response.getReimbursementId());
-        assertEquals(reimbursement.getStatus(), response.getStatus());
+        assertEquals(reimbursement.getReimbursementId(), reimbursementResponse.getReimbursementId());
+        assertEquals(reimbursement.getStatus(), reimbursementResponse.getStatus());
     }
 
     @Test
@@ -157,7 +164,10 @@ public class ReimbursementServiceTest {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.empty());
 
-        assertThrows(ResponseStatusException.class, () -> reimbursementService.updateReimbursementByAdmin("123", 1L, reimbursementRequest, principal));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reimbursementService.updateReimbursementByAdmin("123", 1L, reimbursementRequest, principal));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals("Employee is not found", exception.getReason());
 
         verify(validationHelper, times(1)).validate(reimbursementRequest);
         verify(reimbursementRepository, times(0)).save(any(Reimbursement.class));
@@ -188,34 +198,34 @@ public class ReimbursementServiceTest {
     void testGetReimbursementsWithStatusFalseWhenStatusIsFalseThenReturnReimbursementResponseList() {
         given(reimbursementRepository.findByStatusFalse()).willReturn(Collections.singletonList(reimbursement));
 
-        List<ReimbursementResponse> responses = reimbursementService.getReimbursementsWithStatusFalse();
+        List<ReimbursementResponse> reimbursementResponses = reimbursementService.getReimbursementsWithStatusFalse();
 
         verify(reimbursementRepository, times(1)).findByStatusFalse();
-        assertNotNull(responses);
-        assertFalse(responses.isEmpty());
+        assertNotNull(reimbursementResponses);
+        assertFalse(reimbursementResponses.isEmpty());
 
-        assertEquals(reimbursement.getReimbursementId(), responses.get(0).getReimbursementId());
-        assertEquals(reimbursement.getStatus(), responses.get(0).getStatus());
-        assertEquals(reimbursement.getActivity(), responses.get(0).getActivity());
-        assertEquals(reimbursement.getTypeReimbursement(), responses.get(0).getTypeReimbursement());
-        assertEquals(reimbursement.getDescription(), responses.get(0).getDescription());
-        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), responses.get(0).getAmount());
-        assertEquals(reimbursement.getApprovedId(), responses.get(0).getApprovedId());
-        assertEquals(reimbursement.getApprovedName(), responses.get(0).getApprovedName());
-        assertEquals(reimbursement.getEmployee().getEmployeeId(), responses.get(0).getEmployeeId());
+        assertEquals(reimbursement.getReimbursementId(), reimbursementResponses.get(0).getReimbursementId());
+        assertEquals(reimbursement.getStatus(), reimbursementResponses.get(0).getStatus());
+        assertEquals(reimbursement.getActivity(), reimbursementResponses.get(0).getActivity());
+        assertEquals(reimbursement.getTypeReimbursement(), reimbursementResponses.get(0).getTypeReimbursement());
+        assertEquals(reimbursement.getDescription(), reimbursementResponses.get(0).getDescription());
+        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), reimbursementResponses.get(0).getAmount());
+        assertEquals(reimbursement.getApprovedId(), reimbursementResponses.get(0).getApprovedId());
+        assertEquals(reimbursement.getApprovedName(), reimbursementResponses.get(0).getApprovedName());
+        assertEquals(reimbursement.getEmployee().getEmployeeId(), reimbursementResponses.get(0).getEmployeeId());
     }
 
     @Test
     void testToReimbursementResponseWhenReimbursementIsValidThenReturnReimbursementResponse() {
-        ReimbursementResponse response = reimbursementService.toReimbursementResponse(reimbursement);
+        ReimbursementResponse reimbursementResponse = reimbursementService.toReimbursementResponse(reimbursement);
 
-        assertNotNull(response);
-        assertEquals(reimbursement.getReimbursementId(), response.getReimbursementId());
-        assertEquals(reimbursement.getStatus(), response.getStatus());
-        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), response.getAmount());
-        assertEquals(reimbursement.getActivity(), response.getActivity());
-        assertEquals(reimbursement.getTypeReimbursement(), response.getTypeReimbursement());
-        assertEquals(reimbursement.getDescription(), response.getDescription());
+        assertNotNull(reimbursementResponse);
+        assertEquals(reimbursement.getReimbursementId(), reimbursementResponse.getReimbursementId());
+        assertEquals(reimbursement.getStatus(), reimbursementResponse.getStatus());
+        assertEquals(reimbursementService.convertRupiah(reimbursement.getAmount()), reimbursementResponse.getAmount());
+        assertEquals(reimbursement.getActivity(), reimbursementResponse.getActivity());
+        assertEquals(reimbursement.getTypeReimbursement(), reimbursementResponse.getTypeReimbursement());
+        assertEquals(reimbursement.getDescription(), reimbursementResponse.getDescription());
     }
 
     @Test

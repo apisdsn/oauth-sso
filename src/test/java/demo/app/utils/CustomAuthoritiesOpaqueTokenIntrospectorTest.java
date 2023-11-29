@@ -53,7 +53,6 @@ class CustomAuthoritiesOpaqueTokenIntrospectorTest {
             return;
         }
 
-        // Assert
         assertEquals(principal, result);
         assertThat(principal.getAttributes().get("attribute1"), equalTo("value1"));
         verify(introspectTokenValidator, times(1)).validateToken(principal.getAttributes(), authorityExtractor.extractAuthorities(principal));
@@ -61,10 +60,8 @@ class CustomAuthoritiesOpaqueTokenIntrospectorTest {
 
     @Test
     void testIntrospectWhenInvalidTokenThenThrowException() {
-        // Arrange
         String token = "invalidToken";
 
-        // Act & Assert
         assertThrows(RuntimeException.class, () -> customAuthoritiesOpaqueTokenIntrospector.introspect(token));
         verify(introspectTokenValidator, never()).validateToken(any(), any());
     }

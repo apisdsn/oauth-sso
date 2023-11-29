@@ -177,7 +177,7 @@ public class EmployeeServiceTest {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.update(null, principal));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("Request cannot be null", exception.getReason());
+        assertEquals("Request cannot be null and Full name cannot be blank or empty", exception.getReason());
     }
 
     @Test
@@ -194,7 +194,13 @@ public class EmployeeServiceTest {
     void testDeleteEmployeeWhenInvalidClientIdThenNotFound() {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.empty());
-        assertThrows(ResponseStatusException.class, () -> employeeService.removeCurrent(principal));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.removeCurrent(principal));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals("Employee not found for the given clientId 123", exception.getReason());
+
+        verify(employeeRepository, times(1)).findByClientId(anyString());
+        verify(employeeRepository, times(0)).delete(any(Employee.class));
     }
 
     @Test
@@ -235,6 +241,7 @@ public class EmployeeServiceTest {
     @Test
     void testDeleteEmployeeByClientIdWhenNullThenNotFound() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.removeByClientId(null));
+        
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("Employee not found for the given clientId null", exception.getReason());
 

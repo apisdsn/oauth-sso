@@ -34,7 +34,6 @@ class IntrospectTokenValidatorTest {
     @Test
     @Disabled
     void testValidateTokenWithValidTokenAndValidScopes() {
-        // Create a valid token with valid scopes
         Map<String, Object> token = new HashMap<>();
         token.put("token", "validToken");
         token.put("exp", Instant.now().plusSeconds(3600));
@@ -63,7 +62,6 @@ class IntrospectTokenValidatorTest {
 
     @Test
     void testValidateTokenWithInvalidScopes() {
-        // Create a valid token with invalid scopes
         Map<String, Object> token = new HashMap<>();
         token.put("exp", Instant.now().plusSeconds(3600));
         token.put("active", true);
@@ -76,7 +74,6 @@ class IntrospectTokenValidatorTest {
         scopes = new ArrayList<>();
         scopes.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-        // Validate the token
         assertThrows(ValidatorErrorHandler.class, () -> tokenValidator.validateToken(token, scopes));
     }
 
