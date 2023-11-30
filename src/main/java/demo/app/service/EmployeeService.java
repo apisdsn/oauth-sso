@@ -97,8 +97,8 @@ public class EmployeeService {
     @Transactional
     public EmployeeResponse update(EmployeeRequest request, OAuth2AuthenticatedPrincipal principal) {
         validationHelper.validate(request);
-        if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request cannot be null");
+        if (request == null || request.getFullName() == null || request.getFullName().isBlank() || request.getFullName().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request cannot be null and Full name cannot be blank or empty");
         }
 
         String clientId = getClientIdFromPrincipal(principal);

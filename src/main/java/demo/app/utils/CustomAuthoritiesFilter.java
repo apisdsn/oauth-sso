@@ -1,6 +1,7 @@
 package demo.app.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import demo.app.model.MessageResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -22,6 +23,9 @@ import java.util.*;
 
 @Slf4j
 public class CustomAuthoritiesFilter extends GenericFilterBean {
+    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final String timestamp = LocalDateTime.now().format(formatter);
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -68,19 +72,15 @@ public class CustomAuthoritiesFilter extends GenericFilterBean {
 
     private void sendResponse(HttpServletResponse response, int statusCode, String error, String message) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> responseMap = new HashMap<>();
-
+        MessageResponse messageResponse = new MessageResponse();
         response.setStatus(statusCode);
         PrintWriter writer = response.getWriter();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String timestamp = LocalDateTime.now().format(formatter);
+        messageResponse.setErrors(error);
+        messageResponse.setMessage(message);
+        messageResponse.setTimestamp(timestamp);
 
-        responseMap.put("error", error);
-        responseMap.put("message", message);
-        responseMap.put("timestamp", timestamp);
-
-        writer.println(objectMapper.writeValueAsString(responseMap));
+        writer.println(objectMapper.writeValueAsString(messageResponse));
         writer.flush();
     }
 

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/address")
 public class AddressController {
-
     @Autowired
     private AddressService addressService;
 
@@ -26,4 +25,3 @@ public class AddressController {
         return WebResponse.<AddressResponse>builder().data(addressResponse).build();
     }
 }
-

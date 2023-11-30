@@ -19,31 +19,20 @@ public class ReimbursementController {
 
     @PostMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public WebResponse<ReimbursementResponse> createReimbursement(
-            @RequestBody ReimbursementRequest request,
-            @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal
-    ) {
+    public WebResponse<ReimbursementResponse> createReimbursement(@RequestBody ReimbursementRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         ReimbursementResponse reimbursementResponse = reimbursementService.create(request, principal);
         return WebResponse.<ReimbursementResponse>builder().data(reimbursementResponse).build();
     }
 
     @PatchMapping(path = "/{reimbursementId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebResponse<ReimbursementResponse> updateReimbursement(
-            @PathVariable("reimbursementId") Long reimbursementId,
-            @RequestBody ReimbursementRequest request,
-            @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal
-    ) {
+    public WebResponse<ReimbursementResponse> updateReimbursement(@PathVariable("reimbursementId") Long reimbursementId, @RequestBody ReimbursementRequest request, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         ReimbursementResponse reimbursementResponse = reimbursementService.updateReimbursementUser(reimbursementId, request, principal);
         return WebResponse.<ReimbursementResponse>builder().data(reimbursementResponse).build();
     }
 
     @DeleteMapping("/{reimbursementId}")
-    public WebResponse<String> deleteReimbursement(
-            @PathVariable("reimbursementId") Long reimbursementId,
-            @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal
-    ) {
+    public WebResponse<String> deleteReimbursement(@PathVariable("reimbursementId") Long reimbursementId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         reimbursementService.removeReimbursementByUser(reimbursementId, principal);
         return WebResponse.<String>builder().data("Reimbursement deleted").build();
     }
-
 }

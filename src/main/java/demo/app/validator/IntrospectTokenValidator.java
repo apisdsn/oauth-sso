@@ -21,7 +21,7 @@ public class IntrospectTokenValidator {
     private String ROLES_ATTRIBUTE;
 
     public void validateToken(Map<String, Object> token, Collection<GrantedAuthority> scopes) {
-        log.info("Token: {}", token);
+        log.info("Token IntrospectTokenValidator: {}", token);
 
         Instant expirationTime = getExpirationTime(token);
         if (isTokenInvalidOrExpired(token, expirationTime) || !matchTokenScopes(token, scopes)) {

@@ -41,6 +41,10 @@ public class ReimbursementService {
         String clientId = getClientIdFromPrincipal(principal);
         Employee employee = findEmployeeByClientId(clientId);
 
+        if (request.getAmount() == null || request.getAmount().equals(BigDecimal.ZERO)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount cannot be zero or null");
+        }
+
         Reimbursement reimbursement = new Reimbursement();
         reimbursement.setEmployee(employee);
         reimbursement.setAmount(request.getAmount());
@@ -63,7 +67,11 @@ public class ReimbursementService {
         Reimbursement reimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursementId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reimbursement is not found"));
 
-        Optional.ofNullable(request.getAmount()).ifPresent(reimbursement::setAmount);
+        if (request.getAmount().equals(BigDecimal.ZERO)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount cannot be zero");
+        }
+
+        Optional.of(request.getAmount()).ifPresent(reimbursement::setAmount);
         Optional.ofNullable(request.getDescription()).ifPresent(reimbursement::setDescription);
         Optional.ofNullable(request.getActivity()).ifPresent(reimbursement::setActivity);
         Optional.ofNullable(request.getTypeReimbursement()).ifPresent(reimbursement::setTypeReimbursement);
@@ -155,7 +163,7 @@ public class ReimbursementService {
 
     private Employee findEmployeeByClientId(String clientId) {
         return employeeRepository.findByClientId(clientId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found for the given clientId" + clientId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found for the given clientId " + clientId));
     }
 
     public String convertRupiah(BigDecimal bigDecimalPrice) {
@@ -163,6 +171,4 @@ public class ReimbursementService {
         NumberFormat formatter = NumberFormat.getCurrencyInstance(localId);
         return formatter.format(bigDecimalPrice);
     }
-
-
 }

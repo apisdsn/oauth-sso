@@ -19,7 +19,6 @@ import java.util.Map;
 @Service
 @Slf4j
 public class AddressService {
-
     @Autowired
     private EmployeeRepository employeeRepository;
     @Autowired
@@ -28,7 +27,6 @@ public class AddressService {
     private ValidationHelper validationHelper;
 
     public AddressResponse updateAddress(AddressRequest request, OAuth2AuthenticatedPrincipal principal) {
-
         validationHelper.validate(request);
         String clientId = getClientIdFromPrincipal(principal);
         Employee employee = findEmployeeByClientId(clientId);
@@ -67,6 +65,6 @@ public class AddressService {
 
     private Employee findEmployeeByClientId(String clientId) {
         return employeeRepository.findByClientId(clientId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee not found" + clientId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee not found " + clientId));
     }
 }

@@ -24,4 +24,9 @@ public class ErrorHandler {
                 .body(WebResponse.<String>builder().errors(exception.getReason()).build());
     }
 
+    @ExceptionHandler(ValidatorErrorHandler.class)
+    public ResponseEntity<WebResponse<String>> validatorErrorHandler(ValidatorErrorHandler exception) {
+        return ResponseEntity.status(exception.getStatusCode())
+                .body(WebResponse.<String>builder().errors(exception.getError().get("errors")).build());
+    }
 }
