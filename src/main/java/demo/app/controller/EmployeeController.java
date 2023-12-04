@@ -1,10 +1,10 @@
 package demo.app.controller;
 
-import demo.app.model.WebResponse;
-import demo.app.service.EmployeeService;
 import demo.app.model.EmployeeRequest;
 import demo.app.model.EmployeeResponse;
-import lombok.extern.slf4j.Slf4j;
+import demo.app.model.WebResponse;
+import demo.app.service.EmployeeService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,7 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
+@Tag(name = "Employee", description = "Controllers for Employee APIs")
 @RestController
 @RequestMapping("/api/employees")
 public class EmployeeController {

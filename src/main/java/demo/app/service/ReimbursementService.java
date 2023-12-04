@@ -95,6 +95,10 @@ public class ReimbursementService {
 
         Reimbursement reimbursement = reimbursementRepository.findFirstByEmployeeAndReimbursementId(employee, reimbursementId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reimbursement is not found"));
+        
+        if (request.getStatus() == null || request.getStatus().equals(false)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status cannot be null or false");
+        }
         reimbursement.setStatus(request.getStatus());
         reimbursement.setApprovedId(idApprovedBy);
         reimbursement.setApprovedName(nameApprovedBy);

@@ -4,6 +4,7 @@ import demo.app.model.AddressRequest;
 import demo.app.model.AddressResponse;
 import demo.app.model.WebResponse;
 import demo.app.service.AddressService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Address", description = "Controllers for Address APIs")
 @RestController
 @RequestMapping("/api/address")
 public class AddressController {

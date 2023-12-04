@@ -6,6 +6,7 @@ import demo.app.model.ReimbursementResponse;
 import demo.app.model.WebResponse;
 import demo.app.service.EmployeeService;
 import demo.app.service.ReimbursementService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Admin", description = "Controllers for Admin APIs")
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {

@@ -4,6 +4,7 @@ import demo.app.model.ReimbursementRequest;
 import demo.app.model.ReimbursementResponse;
 import demo.app.model.WebResponse;
 import demo.app.service.ReimbursementService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Reimbursement", description = "Controllers for Reimbursement APIs")
 @RestController
 @RequestMapping("/api/reimbursements")
 public class ReimbursementController {
@@ -30,7 +32,7 @@ public class ReimbursementController {
         return WebResponse.<ReimbursementResponse>builder().data(reimbursementResponse).build();
     }
 
-    @DeleteMapping("/{reimbursementId}")
+    @DeleteMapping(value = "/{reimbursementId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public WebResponse<String> deleteReimbursement(@PathVariable("reimbursementId") Long reimbursementId, @AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
         reimbursementService.removeReimbursementByUser(reimbursementId, principal);
         return WebResponse.<String>builder().data("Reimbursement deleted").build();

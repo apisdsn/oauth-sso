@@ -1,19 +1,29 @@
 package demo.app.utils;
 
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@OpenAPIDefinition(security = {@SecurityRequirement(name = "bearer-key")})
 public class OpenApiConfig {
     @Bean
-    public OpenApiCustomizer customerGlobalHeaderOpenApiCustomizer() {
-        return openApi -> openApi.getComponents()
-                .addSecuritySchemes("bearer-key",
-                        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT"));
+    public OpenAPI openApi() {
+        String securitySchemeName = "bearer-key";
+        return new OpenAPI()
+                .addSecurityItem(new SecurityRequirement().
+                        addList(securitySchemeName))
+                .components(new Components()
+                        .addSecuritySchemes(securitySchemeName, new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")))
+                .info(new Info()
+                        .title("Reimbursement API")
+                        .version("1.0.0")
+                        .description("Reimbursement API"));
     }
 }

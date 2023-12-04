@@ -30,8 +30,6 @@ CREATE TABLE reimbursement
     date_created     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     date_updated     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT FK_reimbursement_clientId FOREIGN KEY (employee_id) REFERENCES employees (employee_id) ON DELETE CASCADE ON UPDATE CASCADE
-
-
 ) ENGINE InnoDB;
 
 CREATE TABLE address

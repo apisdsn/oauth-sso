@@ -50,7 +50,7 @@ public class IntrospectTokenValidator {
     private boolean matchTokenScopes(Map<String, Object> token, Collection<GrantedAuthority> orScopes) {
         log.info("Match Token Scopes: {}", orScopes);
         if (orScopes == null) {
-            return true;
+            return false;
         }
 
         Object rolesObject = token.get(ROLES_ATTRIBUTE);
