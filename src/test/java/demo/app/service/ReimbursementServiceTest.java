@@ -141,6 +141,20 @@ public class ReimbursementServiceTest {
     }
 
     @Test
+    void testUpdateReimbursementByUserWhenAmountIsZeroThenThrowResponseStatusException() {
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
+        given(reimbursementRepository.findFirstByEmployeeAndReimbursementId(any(Employee.class), anyLong())).willReturn(Optional.of(reimbursement));
+
+        reimbursementRequest.setAmount(BigDecimal.ZERO);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reimbursementService.updateReimbursementUser(1L, reimbursementRequest, principal));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Amount cannot be zero", exception.getReason());
+    }
+
+    @Test
     void testUpdateReimbursementByAdminWhenAllParametersAreValidThenReturnReimbursementResponse() {
         reimbursementRequest.setStatus(true);
 
@@ -171,6 +185,33 @@ public class ReimbursementServiceTest {
 
         verify(validationHelper, times(1)).validate(reimbursementRequest);
         verify(reimbursementRepository, times(0)).save(any(Reimbursement.class));
+    }
+
+    @Test
+    void testUpdateReimbursementByAdminWhenStatusIsInvalidThenThrowResponseStatusException() {
+        reimbursementRequest.setStatus(null);
+
+        given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
+        given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
+        given(reimbursementRepository.findFirstByEmployeeAndReimbursementId(any(Employee.class), (anyLong()))).willReturn(Optional.of(reimbursement));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reimbursementService.updateReimbursementByAdmin("123", 1L, reimbursementRequest, principal));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Status cannot be null or false", exception.getReason());
+
+        verify(validationHelper, times(1)).validate(reimbursementRequest);
+        verify(reimbursementRepository, times(0)).save(any(Reimbursement.class));
+    }
+
+    @Test
+    void testUpdateReimbursementWhenClientIdIsInvalidThenThrowResponseStatusException() {
+        given(principal.getAttributes()).willReturn(null);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reimbursementService.updateReimbursementUser(1L, reimbursementRequest, principal));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals("Client ID not found", exception.getReason());
     }
 
     @Test

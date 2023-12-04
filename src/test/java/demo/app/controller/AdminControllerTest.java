@@ -20,9 +20,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -75,6 +76,8 @@ public class AdminControllerTest {
                 .andExpect(jsonPath("$.data.status").value(false))
                 .andExpect(jsonPath("$.data.dateCreated").value(expectedDateCreated))
                 .andExpect(jsonPath("$.data.dateUpdated").value(expectedDateUpdated));
+
+        verify(reimbursementService, times(1)).updateReimbursementByAdmin(any(), anyLong(), any(ReimbursementRequest.class), any());
     }
 
     @Test
@@ -105,6 +108,8 @@ public class AdminControllerTest {
                 .andExpect(jsonPath("$.data[0].dateCreated").value(expectedDateCreated))
                 .andExpect(jsonPath("$.data[0].dateUpdated").value(expectedDateUpdated))
                 .andExpect(jsonPath("$.data[0]").exists());
+
+        verify(reimbursementService, times(1)).getReimbursementsWithStatusFalse();
     }
 
     @Test
@@ -113,6 +118,8 @@ public class AdminControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("OK", null))));
+
+        verify(reimbursementService, times(1)).removeReimbursementByAdmin(anyString(), anyLong());
     }
 
     @Test
@@ -124,7 +131,9 @@ public class AdminControllerTest {
 
         given(employeeService.getByClientId(any())).willReturn(employeeResponse);
 
-        mockMvc.perform(get("/api/admin/employees/{clientId}", "123"))
+        mockMvc.perform(get("/api/admin/employees/{clientId}", "123")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(employeeResponse, null))))
@@ -132,25 +141,34 @@ public class AdminControllerTest {
                 .andExpect(jsonPath("$.data.clientId").value("123"))
                 .andExpect(jsonPath("$.data.fullName").value("John Doe"))
                 .andExpect(jsonPath("$.data.email").value("john.doe@example.com"));
+
+        verify(employeeService, times(1)).getByClientId(any());
     }
 
     @Test
     void testGetAllEmployeesWhenCalledThenReturnListOfEmployeeResponse() throws Exception {
         given(employeeService.findAllEmployee()).willReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/api/admin/employees/all"))
+        mockMvc.perform(get("/api/admin/employees/all")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>(Collections.emptyList(), null))))
                 .andExpect(jsonPath("$.data").isArray());
+
+        verify(employeeService, times(1)).findAllEmployee();
     }
 
     @Test
     void testRemoveEmployeeWhenCalledWithValidClientIdThenReturnOk() throws Exception {
-        mockMvc.perform(delete("/api/admin/employees/{clientId}", "123"))
+        mockMvc.perform(delete("/api/admin/employees/{clientId}", "123")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("Data with clientId has been removed", null))))
                 .andExpect(jsonPath("$.data").value("Data with clientId has been removed"));
+
+        verify(employeeService, times(1)).removeByClientId(any());
     }
 }

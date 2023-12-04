@@ -116,7 +116,7 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    void testGetEmployeeCurrent() {
+    void testGetEmployeeCurrentWhenValidThenEmployeeReturned() {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123", "email", "test@test.com"));
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.of(employee));
         EmployeeResponse response = employeeService.getCurrent(principal);
@@ -241,7 +241,7 @@ public class EmployeeServiceTest {
     @Test
     void testDeleteEmployeeByClientIdWhenNullThenNotFound() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.removeByClientId(null));
-        
+
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("Employee not found for the given clientId null", exception.getReason());
 
