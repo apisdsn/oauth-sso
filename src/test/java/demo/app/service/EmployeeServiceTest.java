@@ -144,7 +144,11 @@ public class EmployeeServiceTest {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.empty());
 
-        assertThrows(ResponseStatusException.class, () -> employeeService.getCurrent(principal));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.getCurrent(principal));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertEquals("Employee not found for the given clientId 123", exception.getReason());
+
         verify(employeeRepository, times(1)).findByClientId(anyString());
     }
 
@@ -194,6 +198,7 @@ public class EmployeeServiceTest {
     void testDeleteEmployeeWhenInvalidClientIdThenNotFound() {
         given(principal.getAttributes()).willReturn(Map.of("sub", "123"));
         given(employeeRepository.findByClientId(anyString())).willReturn(Optional.empty());
+
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> employeeService.removeCurrent(principal));
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import demo.app.entity.Address;
 import demo.app.model.AddressRequest;
 import demo.app.model.AddressResponse;
+import demo.app.model.MessageResponse;
 import demo.app.model.WebResponse;
 import demo.app.repository.AddressRepository;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,6 +22,7 @@ import org.springframework.test.context.jdbc.Sql;
 import java.util.Collections;
 import java.util.Optional;
 
+import static demo.app.utils.CustomAuthoritiesFilter.timestamp;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
@@ -40,7 +42,7 @@ public class AddressApiIntegrationTest {
     public static void init() {
         headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth("WCIUyf1_uaqPiVgz4OyqJRks0YT-ybNb7DisPIKYxE1kBuBt687IY_5yrcU3z9I05wJDXTY");
+        headers.setBearerAuth("OlAD5Ccp1MGuByBuBt6BndMq7XjOgbGcF1yRmAZBLNwZplLvSwA3yMuk8aCuXiU7WF1j6iY");
     }
 
     @Test
@@ -75,6 +77,69 @@ public class AddressApiIntegrationTest {
         optionalAddress.map(Address::getStreet)
                 .ifPresent(street -> assertEquals(result.getData().getStreet(), street));
         assertNull(result.getErrors());
+    }
+
+    @Test
+    @Sql(statements = "INSERT INTO employees(employee_id, client_id, email, full_name, phone_number, gender, company, position) VALUES (1, '239414077758111751', 'user@i2dev.com', 'John Doe', '089512611411', 'Laki-Laki', 'PT Cinta Sejati', 'Software Engineer')", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(statements = "DELETE FROM employees WHERE client_id = '239414077758111751'", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void testUpdateAddressWhenAddressNotFoundAndReturn404HttpStatus() throws JsonProcessingException {
+        AddressRequest addressRequest = new AddressRequest();
+        addressRequest.setStreet("Jl Majapahit No. 15");
+        addressRequest.setCity("Jakarta");
+        addressRequest.setCountry("Indonesia");
+        addressRequest.setProvince("DKI Jakarta");
+        addressRequest.setPostalCode("12345");
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(addressRequest), headers);
+
+        ResponseEntity<WebResponse<AddressResponse>> response = restTemplate.exchange(createURLWithPort() + "/current", HttpMethod.PUT, entity, new ParameterizedTypeReference<>() {
+        });
+
+        WebResponse<AddressResponse> result = response.getBody();
+        assertNotNull(result);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Address not found for the employee", result.getErrors());
+        assertNull(result.getData());
+    }
+
+    @Test
+    void testUpdateAddressWhenTokenNullAndReturn401HttpStatus() throws JsonProcessingException {
+        AddressRequest addressRequest = new AddressRequest();
+        addressRequest.setStreet("Jl Majapahit No. 15");
+        addressRequest.setCity("Jakarta");
+        addressRequest.setCountry("Indonesia");
+        addressRequest.setProvince("DKI Jakarta");
+        addressRequest.setPostalCode("12345");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<>(objectMapper.writeValueAsString(addressRequest), headers);
+
+        ResponseEntity<MessageResponse> response = restTemplate.exchange(createURLWithPort() + "/current", HttpMethod.PUT, entity, new ParameterizedTypeReference<>() {
+        });
+        MessageResponse result = response.getBody();
+        assertNotNull(result);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("You are not authenticated to perform this operation", result.getErrors());
+        assertEquals("Please log in to access the requested resource.", result.getMessage());
+        assertEquals(timestamp, result.getTimestamp());
+    }
+
+    @Test
+    void testEmployeeGetAccessAdminEndpointAndReturn403HttpStatus() {
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<MessageResponse> response = restTemplate.exchange("http://127.0.0.1:" + port + "/api/admin/employees/all", HttpMethod.GET, entity, new ParameterizedTypeReference<>() {
+        });
+
+        MessageResponse result = response.getBody();
+        assertNotNull(result);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("You do not have access to the requested resource. Access denied.", result.getErrors());
+        assertEquals("Make sure you have the appropriate role or contact the system administrator for further assistance.", result.getMessage());
+        assertEquals(timestamp, result.getTimestamp());
     }
 
     private String createURLWithPort() {

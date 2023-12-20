@@ -166,8 +166,8 @@ public class AdminControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("Data with clientId has been removed", null))))
-                .andExpect(jsonPath("$.data").value("Data with clientId has been removed"));
+                .andExpect(content().json(objectMapper.writeValueAsString(new WebResponse<>("Employee with clientId 123 has been removed", null))))
+                .andExpect(jsonPath("$.data").value("Employee with clientId 123 has been removed"));
 
         verify(employeeService, times(1)).removeByClientId(any());
     }
